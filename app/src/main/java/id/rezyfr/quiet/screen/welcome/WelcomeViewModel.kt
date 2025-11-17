@@ -1,4 +1,4 @@
-package id.rezyfr.quiet.screen
+package id.rezyfr.quiet.screen.welcome
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

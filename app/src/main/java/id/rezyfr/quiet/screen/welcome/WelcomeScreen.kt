@@ -1,17 +1,11 @@
-package id.rezyfr.quiet.screen
+package id.rezyfr.quiet.screen.welcome
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.PowerManager
-import android.provider.Settings
-import android.provider.Settings.ACTION_ALL_APPS_NOTIFICATION_SETTINGS
 import android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
-import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
@@ -38,9 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,8 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -61,6 +50,10 @@ import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXH
 import id.rezyfr.quiet.ui.theme.spacingXX
 import id.rezyfr.quiet.ui.theme.spacingXXX
+import id.rezyfr.quiet.util.isIgnoringBatteryOptimizations
+import id.rezyfr.quiet.util.isNotificationAccessGranted
+import id.rezyfr.quiet.util.isNotificationAllowed
+import id.rezyfr.quiet.util.requestDisableBatteryOptimization
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("BatteryLife")
@@ -135,7 +128,7 @@ fun WelcomeScreen(
             ) {
                 // request notification permission
                 if (!state.notificationAllowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     viewModel.checkNotification()
                 }
@@ -224,41 +217,6 @@ fun RequiredAccessCard(
             }
         }
     }
-}
-
-fun isNotificationAccessGranted(context: Context): Boolean {
-    val enabledListeners =
-        Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
-
-    return enabledListeners?.contains(context.packageName) == true
-}
-
-fun isNotificationAllowed(context: Context) : Boolean {
-    return NotificationManagerCompat.from(context).areNotificationsEnabled()
-}
-
-fun requestDisableBatteryOptimization(
-    context: Context,
-    fallbackLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?
-) {
-    if (isIgnoringBatteryOptimizations(context)) return
-
-    try {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = "package:${context.packageName}".toUri()
-        }
-        context.startActivity(intent)
-    } catch (_: Exception) {
-        // Some OEMs might not support this – open settings list instead
-        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-        fallbackLauncher?.launch(intent)
-    }
-}
-
-fun isIgnoringBatteryOptimizations(context: Context): Boolean {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
-    val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-    return pm.isIgnoringBatteryOptimizations(context.packageName)
 }
 
 @Preview(showBackground = true)

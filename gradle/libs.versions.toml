@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0-rc01"
+agp = "8.13.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -7,8 +7,8 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
-androidxNavigation = "2.9.5"
-composeBom = "2024.09.00"
+androidxNavigation = "2.9.6"
+composeBom = "2025.11.00"
 ksp = "2.0.21-1.0.28"
 room = "2.6.1"
 workManager = "2.9.1"
@@ -37,8 +37,14 @@ workManager = {group = "androidx.work", name = "work-runtime-ktx", version.ref =
 koin-android = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-android-test = { module = "io.insert-koin:koin-android-test", version.ref = "koin" }
 
+# Dependencies of the included build-logic
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-compiler-gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
