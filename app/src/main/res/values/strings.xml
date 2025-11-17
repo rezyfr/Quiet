@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Quiet!</string>
+    <string name="welcome_header">Shhh, Quiet!</string>
+    <string name="welcome_body">No ads, no tracking, Quiet! We helps you keep your notifications under control. Live a better life assisted by Quiet!</string>
+    <string name="welcome_allow_notifications_title">Allow notifications</string>
+    <string name="welcome_allow_notifications_desc">This allows Quiet! to send or update notifications</string>
+    <string name="welcome_allow_background_title">Allow Quiet! to run in background</string>
+    <string name="welcome_allow_background_desc">This allows Quiet! to run your automated rules when the app isn\'t open</string>
+    <string name="welcome_enable_title">Enable Quiet!</string>
+    <string name="welcome_enable_desc">This allows Quiet! to react to notifications you receive</string>
+</resources>
