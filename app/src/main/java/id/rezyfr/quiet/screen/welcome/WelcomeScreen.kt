@@ -8,6 +8,7 @@ import android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -213,7 +214,9 @@ fun RequiredAccessCard(
             Spacer(Modifier.width(spacingX))
             Column {
                 Text(stringResource(title), color = contentColor, fontWeight = FontWeight.SemiBold)
-                Text(stringResource(body), color = contentColor)
+                AnimatedVisibility(!allowed) {
+                    Text(stringResource(body), color = contentColor)
+                }
             }
         }
     }
@@ -222,5 +225,5 @@ fun RequiredAccessCard(
 @Preview(showBackground = true)
 @Composable
 fun WelcomeScreenPreview() {
-    App()
+    WelcomeScreen()
 }

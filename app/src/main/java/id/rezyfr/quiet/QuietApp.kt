@@ -2,6 +2,7 @@ package id.rezyfr.quiet
 
 import android.app.Application
 import id.rezyfr.quiet.di.viewModelModule
+import id.rezyfr.quiet.navigation.navigationModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -13,7 +14,8 @@ class QuietApp : Application() {
             androidContext(this@QuietApp)
             modules(
                 listOf(
-                    viewModelModule
+                    viewModelModule,
+                    navigationModule
                 )
             )
         }

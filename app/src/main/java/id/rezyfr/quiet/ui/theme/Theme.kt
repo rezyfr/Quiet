@@ -36,7 +36,7 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = TextPrimary,
 
     surface = DarkSurface,
-    onSurface = DarkBackground,
+    onSurface = TextPrimary,
 
     surfaceVariant = DarkCard,
     onSurfaceVariant = TextSecondary,

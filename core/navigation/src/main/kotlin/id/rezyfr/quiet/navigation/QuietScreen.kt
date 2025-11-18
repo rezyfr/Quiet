@@ -1,17 +1,15 @@
 package id.rezyfr.quiet.navigation
 
-import android.R.attr.type
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import kotlin.collections.filter
-import kotlin.collections.first
 
 sealed class QuietScreens(
     val route: String,
     val navArguments: List<NamedNavArgument> = emptyList()
 ) {
     val name: String = route.appendArguments(navArguments)
+    data object Welcome : QuietScreens("welcome")
     // home screen
     data object Home : QuietScreens("home")
 
