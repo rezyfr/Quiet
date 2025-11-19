@@ -7,18 +7,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 data class TopLevelDestination(
     val route: String,
-    val selectedIcon: ImageVector,
+    val icon: ImageVector,
     val iconTextId: Int? = null
 )
 
 val TOP_LEVEL_DESTINATIONS = listOf(
     TopLevelDestination(
         route = QuietPage.Rules.route,
-        selectedIcon = Icons.Default.Notifications,
+        icon = Icons.Default.Notifications,
         iconTextId = R.string.tab_rules
     ),
     TopLevelDestination(
-        selectedIcon = Icons.AutoMirrored.Filled.List,
+        icon = Icons.AutoMirrored.Filled.List,
         route = QuietPage.History.route,
         iconTextId = R.string.tab_history
     )

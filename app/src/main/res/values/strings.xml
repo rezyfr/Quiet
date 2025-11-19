@@ -8,4 +8,5 @@
     <string name="welcome_allow_background_desc">This allows Quiet! to run your automated rules when the app isn\'t open</string>
     <string name="welcome_enable_title">Enable Quiet!</string>
     <string name="welcome_enable_desc">This allows Quiet! to react to notifications you receive</string>
+    <string name="rule_add_first">Add your first rule</string>
 </resources>

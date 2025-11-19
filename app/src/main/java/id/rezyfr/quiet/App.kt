@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.rememberNavController
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietNavHost
-import id.rezyfr.quiet.screen.welcome.WelcomeScreen
 import id.rezyfr.quiet.ui.theme.QuietTheme
 
 @Composable

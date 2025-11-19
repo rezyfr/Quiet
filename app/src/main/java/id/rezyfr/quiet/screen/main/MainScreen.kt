@@ -44,7 +44,7 @@ fun MainBottomPager() {
                         },
                         icon = {
                             Icon(
-                                imageVector = dest.selectedIcon,
+                                imageVector = dest.icon,
                                 contentDescription = null
                             )
                         },
