@@ -13,6 +13,9 @@ sealed class QuietScreens(
     // home screen
     data object Home : QuietScreens("home")
 
+    data object AddRules : QuietScreens("add_rules")
+
+    data object PickApp : QuietScreens("pick_app")
     // example screen
     data object Example : QuietScreens(
         route = "example",

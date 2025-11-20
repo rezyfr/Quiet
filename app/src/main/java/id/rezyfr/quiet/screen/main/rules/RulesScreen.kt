@@ -32,9 +32,13 @@ import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXH
 import id.rezyfr.quiet.ui.theme.spacingXX
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun RulesScreen(modifier: Modifier = Modifier) {
+fun RulesScreen(
+    modifier: Modifier = Modifier,
+    viewModel: RulesScreenViewModel = koinViewModel()
+) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -87,7 +91,9 @@ fun RulesScreen(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { },
+                    onClick = {
+                        viewModel.navigateToAddRules()
+                    },
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,

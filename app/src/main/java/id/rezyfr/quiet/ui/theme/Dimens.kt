@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 
 val spacingSmall = 4.dp
 val spacing = 8.dp
+val spacingH = 12.dp
 val spacingX = 16.dp
 val spacingXH = 20.dp
 val spacingXX = 24.dp

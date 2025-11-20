@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.workManager)
     implementation(libs.koin.android)
+    implementation(libs.accompanist.drawablepainter)
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)

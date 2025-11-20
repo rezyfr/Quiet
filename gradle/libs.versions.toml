@@ -13,6 +13,7 @@ ksp = "2.0.21-1.0.28"
 room = "2.6.1"
 workManager = "2.9.1"
 koin = "4.1.1"
+accompanist = "0.37.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +38,7 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 workManager = {group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 koin-android = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-android-test = { module = "io.insert-koin:koin-android-test", version.ref = "koin" }
+accompanist-drawablepainter = { group = "com.google.accompanist", name =  "accompanist-drawablepainter", version.ref = "accompanist" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
