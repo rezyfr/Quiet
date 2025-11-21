@@ -1,5 +1,7 @@
 package id.rezyfr.quiet.screen.rule
 
+import android.content.pm.PackageManager
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,29 +22,69 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.component.WavyText
+import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacingX
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AddRuleScreen(
+    navController: NavController,
     onContainsClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
     viewModel: AddRuleScreenViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
+    val pm = context.packageManager
+
+    val backStackEntry = navController.currentBackStackEntryAsState().value
+
+    val appPackageName = backStackEntry
+        ?.savedStateHandle
+        ?.get<String>("key_pick_apps")
+
+    val pickedApp = remember(appPackageName) {
+        try {
+            appPackageName?.let {
+                val info = pm.getApplicationInfo(it, 0)
+                AppItem(
+                    label = info.loadLabel(pm).toString(),
+                    icon = info.loadIcon(pm),
+                    packageName = it
+                )
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            print(e)
+            null
+        }
+    }
+
+    LaunchedEffect(appPackageName) {
+        if (appPackageName != null) {
+            backStackEntry.savedStateHandle.remove<String>("key_pick_apps")
+            viewModel.setAppItem(pickedApp)
+        }
+    }
+
     val state by viewModel.state.collectAsState()
 
     AddRuleContent(
@@ -103,7 +145,7 @@ fun RuleEditorHeader(
     onAddExtraCriteriaClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
 ) {
-    val appText = state.appLabel ?: stringResource(R.string.rule_any_app)
+    val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
     val containsText = state.criteriaText?.let { stringResource(R.string.rule_contains, it) } ?: stringResource(
         R.string.rule_contains_anything
     )
@@ -131,9 +173,9 @@ fun RuleEditorHeader(
             ) {
                 Text(stringResource(R.string.from))
 
-                if (state.appIcon != null) {
+                if (state.appItem?.icon != null) {
                     Icon(
-                        painter = state.appIcon,
+                        painter = rememberDrawablePainter(state.appItem.icon),
                         contentDescription = null,
                         tint = Color.Unspecified, // show original icon color
                         modifier = Modifier
@@ -252,10 +294,15 @@ fun AddRuleEmptyPreview() {
 @Preview(showBackground = true)
 @Composable
 fun AddRuleFilledPreview() {
+    val context = LocalContext.current
     QuietTheme {
         AddRuleContent(
             state = AddRuleScreenViewModel.AddRuleScreenState(
-                appLabel = "Microsoft Teams",
+                appItem = AppItem(
+                    label = "Microsoft Teams",
+                    packageName = "com.microsoft.teams",
+                    icon = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!
+                ),
                 criteriaText = "meeting",
                 actionLabel = "mute"
             ),

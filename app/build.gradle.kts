@@ -2,6 +2,7 @@ plugins {
     id("quiet.android.application")
     id("quiet.android.application.compose")
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {

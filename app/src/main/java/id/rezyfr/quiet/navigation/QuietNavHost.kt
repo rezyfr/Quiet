@@ -22,6 +22,7 @@ fun QuietNavHost(
     } else {
         QuietScreens.Welcome.route
     }
+
     NavHost(
         navController = navHostController,
         startDestination = startDestination
@@ -33,7 +34,9 @@ fun QuietNavHost(
         quietHomeNavigation()
 
         composable(route = QuietScreens.AddRules.route) {
-            AddRuleScreen()
+            AddRuleScreen(
+                navHostController
+            )
         }
 
         composable(route = QuietScreens.PickApp.route) {

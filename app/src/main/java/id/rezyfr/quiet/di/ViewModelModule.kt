@@ -11,5 +11,5 @@ val viewModelModule = module {
     viewModel { WelcomeViewModel(get()) }
     viewModel { RulesScreenViewModel(get()) }
     viewModel { AddRuleScreenViewModel(get()) }
-    viewModel { PickAppViewModel() }
+    viewModel { PickAppViewModel(get()) }
 }
