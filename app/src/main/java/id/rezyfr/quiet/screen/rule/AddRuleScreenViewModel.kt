@@ -19,14 +19,22 @@ class AddRuleScreenViewModel(
         _state.update { it.copy(appItem = appItem) }
     }
 
+    fun setCriteria(criteria: List<String>) {
+        _state.update { it.copy(criteriaText = criteria) }
+    }
+
     fun navigateToPickApp() {
         navigator.navigate(QuietScreens.PickApp.route)
     }
 
+    fun navigateToPickCriteria() {
+        navigator.navigate(QuietScreens.Criteria.route)
+    }
+
     data class AddRuleScreenState(
         val appItem: AppItem? = null,
-        val criteriaText: String? = null,         // null -> "anything"
+        val criteriaText: List<String> = emptyList(),         // null -> "anything"
         val actionLabel: String = "do nothing",           // e.g. "do nothing", "mute"
-        val actionIcon: Painter? = null    // optional action icon
+        val actionIcon: Painter? = null,    // optional action icon,
     )
 }

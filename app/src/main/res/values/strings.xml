@@ -26,4 +26,8 @@
     <string name="criteria_contains_any_of">contains any of</string>
     <string name="apply_filter">Apply filter</string>
     <string name="criteria_apply_filter_info">When you\'re done tap apply to set the filter for your notification rule.</string>
+    <string name="done">Done</string>
+    <string name="cancel">CANCEL</string>
+    <string name="criteria_notification_contains">Notification contains</string>
+    <string name="start_typing">Start typing…</string>
 </resources>

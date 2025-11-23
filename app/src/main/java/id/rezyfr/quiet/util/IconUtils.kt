@@ -8,5 +8,5 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun Int.drawable(context: Context) : Painter {
-    return rememberDrawablePainter( AppCompatResources.getDrawable(context, this))
+    return rememberDrawablePainter(AppCompatResources.getDrawable(context, this))
 }

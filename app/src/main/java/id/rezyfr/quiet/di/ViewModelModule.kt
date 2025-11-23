@@ -1,5 +1,6 @@
 package id.rezyfr.quiet.di
 
+import id.rezyfr.quiet.screen.criteria.CriteriaViewModel
 import id.rezyfr.quiet.screen.main.rules.RulesScreenViewModel
 import id.rezyfr.quiet.screen.pickapp.PickAppViewModel
 import id.rezyfr.quiet.screen.rule.AddRuleScreenViewModel
@@ -12,4 +13,5 @@ val viewModelModule = module {
     viewModel { RulesScreenViewModel(get()) }
     viewModel { AddRuleScreenViewModel(get()) }
     viewModel { PickAppViewModel(get()) }
+    viewModel { CriteriaViewModel(get()) }
 }

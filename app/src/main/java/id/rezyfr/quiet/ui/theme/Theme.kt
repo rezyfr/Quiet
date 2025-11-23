@@ -24,6 +24,8 @@ private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFFCECECE)         // subtle gray
 private val TextMuted = Color(0xFF9A9A9A)
 
+private val TextFieldBackground = Color(0xFF3f424b)    // dark gray for text fields
+
 private val DarkColorScheme = darkColorScheme(
     primary = YellowPrimary,
     onPrimary = Color.Black,
@@ -40,6 +42,7 @@ private val DarkColorScheme = darkColorScheme(
 
     surfaceVariant = DarkCard,
     onSurfaceVariant = TextSecondary,
+    tertiaryContainer = TextFieldBackground,
 
     outline = Color(0xFF3A3A3A),
 )

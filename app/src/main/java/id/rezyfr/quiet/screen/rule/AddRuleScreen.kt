@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastJoinToString
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
@@ -85,11 +86,23 @@ fun AddRuleScreen(
         }
     }
 
+    val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
+
+    LaunchedEffect(criteria) {
+        if (criteria != null) {
+            backStackEntry.savedStateHandle.remove<List<String>>("key_criteria")
+            viewModel.setCriteria(criteria)
+        }
+    }
+
     val state by viewModel.state.collectAsState()
 
     AddRuleContent(
         onAppClick = {
             viewModel.navigateToPickApp()
+        },
+        onCriteriaClick = {
+            viewModel.navigateToPickCriteria()
         },
         state = state,
     )
@@ -100,7 +113,8 @@ fun AddRuleContent(
     state: AddRuleScreenViewModel.AddRuleScreenState,
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {}
+    onSaveClick: () -> Unit = {},
+    onCriteriaClick: () -> Unit = {},
 ) {
     Surface(
         modifier.background(MaterialTheme.colorScheme.background)
@@ -112,7 +126,8 @@ fun AddRuleContent(
         ) {
             RuleEditorHeader(
                 state = state,
-                onAppClick = onAppClick
+                onAppClick = onAppClick,
+                onCriteriaClick = onCriteriaClick
             )
 
             Spacer(Modifier.height(12.dp))
@@ -146,9 +161,13 @@ fun RuleEditorHeader(
     onActionClick: () -> Unit = {},
 ) {
     val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
-    val containsText = state.criteriaText?.let { stringResource(R.string.rule_contains, it) } ?: stringResource(
-        R.string.rule_contains_anything
-    )
+    val containsText = if (state.criteriaText.isEmpty()) {
+        stringResource(R.string.rule_contains_anything)
+    } else {
+        "contains ${state.criteriaText.fastJoinToString(" or ") {
+            "\"${it.capitalize()}\""
+        }}"
+    }
 
     Column(
         modifier = modifier
@@ -303,7 +322,7 @@ fun AddRuleFilledPreview() {
                     packageName = "com.microsoft.teams",
                     icon = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!
                 ),
-                criteriaText = "meeting",
+                criteriaText = listOf("meeting", "call"),
                 actionLabel = "mute"
             ),
         )
