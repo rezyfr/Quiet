@@ -18,7 +18,12 @@
     <string name="then">"then "</string>
     <string name="rule_recent_matching_notifications">Recent matching notifications</string>
     <string name="rule_no_recent_notifications_match">No recent notifications match this rule. This is because your rule is too specific, or the notifications happened before the app was installed.</string>
-    <string name="pick_when_notification">When notification</string>
+    <string name="when_notification">When notification</string>
     <string name="pick_is_from">is from</string>
     <string name="pick_search_placeholder">Search...</string>
+    <string name="criteria_phrase_title">Phrase</string>
+    <string name="criteria_phrase_desc">Start filtering with a word or phrase</string>
+    <string name="criteria_contains_any_of">contains any of</string>
+    <string name="apply_filter">Apply filter</string>
+    <string name="criteria_apply_filter_info">When you\'re done tap apply to set the filter for your notification rule.</string>
 </resources>

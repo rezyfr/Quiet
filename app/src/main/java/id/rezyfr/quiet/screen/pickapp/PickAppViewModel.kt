@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import kotlinx.coroutines.Dispatchers
