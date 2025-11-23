@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import id.rezyfr.quiet.navigation.AppComposeNavigator
+import id.rezyfr.quiet.navigation.QuietScreens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +14,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class PickAppViewModel() : ViewModel() {
+class PickAppViewModel(
+    private val navigator: AppComposeNavigator
+) : ViewModel() {
 
     private val _state = MutableStateFlow(PickAppUiState())
     val state: StateFlow<PickAppUiState> = _state
@@ -45,6 +49,10 @@ class PickAppViewModel() : ViewModel() {
 
     fun selectApp(app: AppItem) {
         _state.update { it.copy(selectedApp = app) }
+    }
+
+    fun pickApp() {
+        navigator.navigateBackWithResult("key_pick_apps", _state.value.selectedApp?.packageName, QuietScreens.AddRules.route)
     }
 
     data class PickAppUiState(
