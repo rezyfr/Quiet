@@ -111,7 +111,7 @@ fun PickAppContent(
             Row(
                 verticalAlignment = Alignment.Top
             ) {
-                Text(stringResource(R.string.pick_when_notification))
+                Text(stringResource(R.string.when_notification))
                 Spacer(Modifier.width(spacingSmall))
                 WavyText(text = stringResource(R.string.pick_is_from))
             }

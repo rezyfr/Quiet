@@ -5,6 +5,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import id.rezyfr.quiet.screen.criteria.CriteriaScreen
 import id.rezyfr.quiet.screen.pickapp.PickAppScreen
 import id.rezyfr.quiet.screen.rule.AddRuleScreen
 import id.rezyfr.quiet.screen.welcome.WelcomeScreen
@@ -41,6 +42,10 @@ fun QuietNavHost(
 
         composable(route = QuietScreens.PickApp.route) {
             PickAppScreen()
+        }
+
+        composable(route = QuietScreens.Criteria.route) {
+            CriteriaScreen()
         }
     }
 }
