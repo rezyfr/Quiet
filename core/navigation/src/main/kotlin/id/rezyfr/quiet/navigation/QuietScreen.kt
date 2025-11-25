@@ -18,6 +18,7 @@ sealed class QuietScreens(
     data object PickApp : QuietScreens("pick_app")
 
     data object Criteria : QuietScreens("criteria")
+    data object Action : QuietScreens("actions")
     // example screen
     data object Example : QuietScreens(
         route = "example",

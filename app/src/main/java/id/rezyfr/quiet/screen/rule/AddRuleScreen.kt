@@ -42,9 +42,12 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.component.WavyText
+import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacingX
+import id.rezyfr.quiet.util.drawable
+import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -95,6 +98,21 @@ fun AddRuleScreen(
         }
     }
 
+    val actionString = backStackEntry?.savedStateHandle?.get<String>("key_pick_actions")
+
+    LaunchedEffect(actionString) {
+        if (actionString != null) {
+            try {
+                val action = Json.decodeFromString<ActionItem>(actionString)
+                backStackEntry.savedStateHandle.remove<String>("key_pick_actions")
+                viewModel.setAction(action)
+            } catch (e: Exception) {
+                // Optionally log the error or show an error message
+                backStackEntry.savedStateHandle.remove<String>("key_pick_actions")
+            }
+        }
+    }
+
     val state by viewModel.state.collectAsState()
 
     AddRuleContent(
@@ -103,6 +121,9 @@ fun AddRuleScreen(
         },
         onCriteriaClick = {
             viewModel.navigateToPickCriteria()
+        },
+        onActionClick = {
+            viewModel.navigateToPickAction()
         },
         state = state,
     )
@@ -114,6 +135,7 @@ fun AddRuleContent(
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
+    onActionClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
 ) {
     Surface(
@@ -127,7 +149,8 @@ fun AddRuleContent(
             RuleEditorHeader(
                 state = state,
                 onAppClick = onAppClick,
-                onCriteriaClick = onCriteriaClick
+                onCriteriaClick = onCriteriaClick,
+                onActionClick = onActionClick
             )
 
             Spacer(Modifier.height(12.dp))
@@ -248,7 +271,8 @@ fun RuleEditorHeader(
             ) {
                 Text(stringResource(R.string.then))
 
-                if (state.actionIcon != null) {
+                if (state.action?.icon != null) {
+                    val context = LocalContext.current
                     Surface(
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -256,7 +280,7 @@ fun RuleEditorHeader(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                painter = state.actionIcon,
+                                painter = state.action.icon.drawable(context),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.background,
                                 modifier = Modifier.size(14.dp)
@@ -267,7 +291,7 @@ fun RuleEditorHeader(
                 }
 
                 WavyText(
-                    text = state.actionLabel,
+                    text = state.action?.title ?: stringResource(R.string.rule_do_nothing),
                     onClick = onActionClick
                 )
             }
@@ -323,7 +347,7 @@ fun AddRuleFilledPreview() {
                     icon = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!
                 ),
                 criteriaText = listOf("meeting", "call"),
-                actionLabel = "mute"
+                action = null
             ),
         )
     }

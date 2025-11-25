@@ -3,6 +3,7 @@ plugins {
     id("quiet.android.application.compose")
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.parcelize)
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -55,6 +56,7 @@ dependencies {
     implementation(libs.workManager)
     implementation(libs.koin.android)
     implementation(libs.accompanist.drawablepainter)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
