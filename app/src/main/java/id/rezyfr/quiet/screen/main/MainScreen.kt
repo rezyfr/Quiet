@@ -16,59 +16,39 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import id.rezyfr.quiet.navigation.TOP_LEVEL_DESTINATIONS
 import id.rezyfr.quiet.ui.QuietTabPager
+import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @Composable
-fun MainBottomPager() {
+fun MainBottomPager(modifier: Modifier = Modifier) {
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState() {
-        TOP_LEVEL_DESTINATIONS.size
-    }
-    Scaffold(
-        bottomBar = {
-            MainBottomNav(coroutineScope, pagerState)
-        }
-    ) {
-        QuietTabPager(
-            Modifier
-            .fillMaxSize()
-            .padding(it),
-            pagerState
-        )
+    val pagerState = rememberPagerState { TOP_LEVEL_DESTINATIONS.size }
+    Scaffold(modifier = modifier, bottomBar = { MainBottomNav(coroutineScope, pagerState) }) {
+        QuietTabPager(pagerState, Modifier.fillMaxSize().padding(it))
     }
 }
 
 @Composable
 fun MainBottomNav(
     coroutineScope: CoroutineScope,
-    pagerState: PagerState
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
 ) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-    ) {
+    NavigationBar(modifier = modifier, containerColor = MaterialTheme.colorScheme.surface) {
         TOP_LEVEL_DESTINATIONS.forEachIndexed { index, dest ->
             val selected = pagerState.currentPage == index
             NavigationBarItem(
                 selected = selected,
-                onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = dest.icon,
-                        contentDescription = null
-                    )
-                },
+                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+                icon = { Icon(imageVector = dest.icon, contentDescription = null) },
                 label = { Text(dest.route.capitalize(Locale.ROOT)) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                )
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primary,
+                    ),
             )
         }
     }

@@ -17,21 +17,22 @@ import id.rezyfr.quiet.ui.theme.spacingXX
 
 @Composable
 fun PrimaryButton(
-    modifier: Modifier = Modifier,
     text: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit = {},
 ) {
     Button(
         modifier = modifier,
         onClick = onClick,
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
         contentPadding = PaddingValues(horizontal = spacingXX, vertical = spacingX),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     ) {
         Text(text, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
     }
@@ -39,10 +40,6 @@ fun PrimaryButton(
 
 @Preview
 @Composable
-fun PrimaryButtonPreview() {
-    QuietTheme {
-        PrimaryButton(text = "Button") {
-
-        }
-    }
+private fun PrimaryButtonPreview() {
+    QuietTheme { PrimaryButton(text = "Button") {} }
 }

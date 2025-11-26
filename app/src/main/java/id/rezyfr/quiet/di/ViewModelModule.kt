@@ -12,7 +12,7 @@ import org.koin.dsl.module
 val viewModelModule = module {
     viewModel { WelcomeViewModel(get()) }
     viewModel { RulesScreenViewModel(get()) }
-    viewModel { AddRuleScreenViewModel(get()) }
+    viewModel { AddRuleScreenViewModel(get(), get()) }
     viewModel { PickAppViewModel(get()) }
     viewModel { CriteriaViewModel(get()) }
     viewModel { ActionPickerScreenViewModel(get()) }

@@ -33,11 +33,7 @@ import androidx.compose.ui.unit.dp
 import id.rezyfr.quiet.ui.theme.QuietTheme
 
 @Composable
-fun WavyText(
-    modifier: Modifier = Modifier,
-    text: String,
-    onClick: () -> Unit = {}
-) {
+fun WavyText(text: String, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     var textWidth by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
 
@@ -46,13 +42,9 @@ fun WavyText(
             text = text,
             color = MaterialTheme.colorScheme.primary,
             onTextLayout = { textLayoutResult ->
-                with(density) {
-                    textWidth = textLayoutResult.size.width.toDp()
-                }
+                with(density) { textWidth = textLayoutResult.size.width.toDp() }
             },
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.SemiBold
-            )
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
         )
 
         WavyLine(modifier = Modifier.width(textWidth), color = MaterialTheme.colorScheme.primary)
@@ -62,20 +54,20 @@ fun WavyText(
 @Composable
 fun WavyLine(modifier: Modifier = Modifier, color: Color = Color.Black) {
     val infiniteTransition = rememberInfiniteTransition()
-    val wave by infiniteTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+    val wave by
+        infiniteTransition.animateFloat(
+            initialValue = -1f,
+            targetValue = 0f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
+                ),
         )
-    )
+
     val showPoints by remember { mutableStateOf(false) }
 
-    Canvas(
-        modifier = modifier
-            .height(15.dp)
-    ) {
+    Canvas(modifier = modifier.height(15.dp)) {
         val wavelength = 24.dp.toPx()
         val amplitude = 4.dp.toPx()
         val segment = wavelength / 4f
@@ -83,37 +75,36 @@ fun WavyLine(modifier: Modifier = Modifier, color: Color = Color.Black) {
         val points = mutableListOf<Offset>()
         val step = wave * wavelength
         var distance = 0f
-        val path = Path().apply {
-            reset()
-            moveTo(step + 0f, centerY)
-            points.add(Offset(step + 0f, centerY))
-            while (distance < (size.width + wavelength)) {
-                val x1 = segment + distance + step
-                val x2 = segment * 2 + distance + step
-                val x3 = segment * 3 + distance + step
-                val x4 = segment * 4 + distance + step
-                val y1 = centerY - amplitude
-                val y2 = centerY
-                val y3 = centerY + amplitude
-                val y4 = centerY
+        val path =
+            Path().apply {
+                reset()
+                moveTo(step + 0f, centerY)
+                points.add(Offset(step + 0f, centerY))
+                while (distance < (size.width + wavelength)) {
+                    val x1 = segment + distance + step
+                    val x2 = segment * 2 + distance + step
+                    val x3 = segment * 3 + distance + step
+                    val x4 = segment * 4 + distance + step
+                    val y1 = centerY - amplitude
+                    val y2 = centerY
+                    val y3 = centerY + amplitude
+                    val y4 = centerY
 
-                points.add(Offset(x1, y1))
-                points.add(Offset(x2, y2))
-                points.add(Offset(x3, y3))
-                points.add(Offset(x4, y4))
+                    points.add(Offset(x1, y1))
+                    points.add(Offset(x2, y2))
+                    points.add(Offset(x3, y3))
+                    points.add(Offset(x4, y4))
 
-                quadraticBezierTo(x1, y1, x2, y2)
-                quadraticBezierTo(x3, y3, x4, y4)
-                distance += wavelength
+                    quadraticBezierTo(x1, y1, x2, y2)
+                    quadraticBezierTo(x3, y3, x4, y4)
+                    distance += wavelength
+                }
             }
-        }
 
         clipRect {
             drawPath(path = path, color = color, style = Stroke(width = 12f, cap = StrokeCap.Round))
             if (showPoints) {
-                points.forEach {
-                    drawCircle(color = Color.Black, radius = 2f, center = it)
-                }
+                points.forEach { drawCircle(color = Color.Black, radius = 2f, center = it) }
             }
         }
     }
@@ -121,12 +112,6 @@ fun WavyLine(modifier: Modifier = Modifier, color: Color = Color.Black) {
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewWavyText() {
-    QuietTheme {
-        Surface {
-            WavyText(
-                text = "Hello World"
-            )
-        }
-    }
+private fun PreviewWavyText() {
+    QuietTheme { Surface { WavyText(text = "Hello World") } }
 }

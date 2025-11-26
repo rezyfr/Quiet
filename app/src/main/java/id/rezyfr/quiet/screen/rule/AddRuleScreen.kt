@@ -1,10 +1,12 @@
 package id.rezyfr.quiet.screen.rule
 
-import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -42,53 +46,39 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.component.WavyText
+import id.rezyfr.quiet.domain.NotificationModel
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.theme.QuietTheme
+import id.rezyfr.quiet.ui.theme.spacing
+import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
+import id.rezyfr.quiet.ui.theme.spacingXX
 import id.rezyfr.quiet.util.drawable
+import id.rezyfr.quiet.util.getAppItem
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AddRuleScreen(
     navController: NavController,
-    onContainsClick: () -> Unit = {},
-    onActionClick: () -> Unit = {},
-    viewModel: AddRuleScreenViewModel = koinViewModel()
+    viewModel: AddRuleScreenViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
     val pm = context.packageManager
-
     val backStackEntry = navController.currentBackStackEntryAsState().value
+    val appPackageName = backStackEntry?.savedStateHandle?.get<String>("key_pick_apps")
+    val pickedApp = remember(appPackageName) { getAppItem(pm, appPackageName.orEmpty()) }
 
-    val appPackageName = backStackEntry
-        ?.savedStateHandle
-        ?.get<String>("key_pick_apps")
-
-    val pickedApp = remember(appPackageName) {
-        try {
-            appPackageName?.let {
-                val info = pm.getApplicationInfo(it, 0)
-                AppItem(
-                    label = info.loadLabel(pm).toString(),
-                    icon = info.loadIcon(pm),
-                    packageName = it
-                )
-            }
-        } catch (e: PackageManager.NameNotFoundException) {
-            print(e)
-            null
-        }
-    }
+    LaunchedEffect(Unit) { viewModel.getRecentNotification(pm, null) }
 
     LaunchedEffect(appPackageName) {
         if (appPackageName != null) {
             backStackEntry.savedStateHandle.remove<String>("key_pick_apps")
             viewModel.setAppItem(pickedApp)
+            viewModel.getRecentNotification(pm, pickedApp?.packageName)
         }
     }
-
     val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
 
     LaunchedEffect(criteria) {
@@ -97,7 +87,6 @@ fun AddRuleScreen(
             viewModel.setCriteria(criteria)
         }
     }
-
     val actionString = backStackEntry?.savedStateHandle?.get<String>("key_pick_actions")
 
     LaunchedEffect(actionString) {
@@ -112,19 +101,12 @@ fun AddRuleScreen(
             }
         }
     }
-
     val state by viewModel.state.collectAsState()
 
     AddRuleContent(
-        onAppClick = {
-            viewModel.navigateToPickApp()
-        },
-        onCriteriaClick = {
-            viewModel.navigateToPickCriteria()
-        },
-        onActionClick = {
-            viewModel.navigateToPickAction()
-        },
+        onAppClick = { viewModel.navigateToPickApp() },
+        onCriteriaClick = { viewModel.navigateToPickCriteria() },
+        onActionClick = { viewModel.navigateToPickAction() },
         state = state,
     )
 }
@@ -138,38 +120,47 @@ fun AddRuleContent(
     onActionClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
 ) {
-    Surface(
-        modifier.background(MaterialTheme.colorScheme.background)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(spacingX)
+    Surface(modifier.background(MaterialTheme.colorScheme.background)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(spacingX),
+            contentPadding = PaddingValues(bottom = spacingXX),
         ) {
-            RuleEditorHeader(
-                state = state,
-                onAppClick = onAppClick,
-                onCriteriaClick = onCriteriaClick,
-                onActionClick = onActionClick
-            )
+            // ----- HEADER -----
+            item {
+                RuleEditorHeader(
+                    state = state,
+                    onAppClick = onAppClick,
+                    onCriteriaClick = onCriteriaClick,
+                    onActionClick = onActionClick,
+                )
+            }
 
-            Spacer(Modifier.height(12.dp))
+            item { Spacer(Modifier.height(12.dp)) }
 
-            PrimaryButton(
-                text = stringResource(R.string.rule_save),
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onSaveClick
-            )
+            // ----- SAVE BUTTON -----
+            item {
+                PrimaryButton(
+                    text = stringResource(R.string.rule_save),
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onSaveClick,
+                )
+            }
 
-            HorizontalDivider(
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .fillMaxWidth(),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-            )
+            item {
+                HorizontalDivider(
+                    modifier = Modifier.padding(top = 24.dp).fillMaxWidth(),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                )
+            }
 
-            RecentMatchingNotificationsSection()
+            // ----- RECENT MATCHING -----
+            item {
+                RecentMatchingNotificationsSection(
+                    modifier = Modifier.fillMaxWidth(),
+                    notifications = state.notificationList,
+                )
+            }
         }
     }
 }
@@ -180,138 +171,119 @@ fun RuleEditorHeader(
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
-    onAddExtraCriteriaClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
 ) {
     val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
-    val containsText = if (state.criteriaText.isEmpty()) {
-        stringResource(R.string.rule_contains_anything)
-    } else {
-        "contains ${state.criteriaText.fastJoinToString(" or ") {
-            "\"${it.capitalize()}\""
-        }}"
-    }
+    val containsText =
+        if (state.criteriaText.isEmpty()) {
+            stringResource(R.string.rule_contains_anything)
+        } else {
+            "contains ${
+            state.criteriaText.fastJoinToString(" or ") {
+                "\"${it.capitalize()}\""
+            }
+        }"
+        }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-    ) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)) {
         // Shared style like BuzzKill
         CompositionLocalProvider(
-            LocalTextStyle provides MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        ) {
-            // Line 1: When I get a notification
-            Text(stringResource(R.string.rule_when_notification))
+            LocalTextStyle provides
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )) {
+                // Line 1: When I get a notification
+                Text(stringResource(R.string.rule_when_notification))
 
-            Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.dp))
+                // Line 2: from [icon] [appLabel] that
+                RuleApps(state, state.appItem?.icon, appText, onAppClick)
+                Spacer(Modifier.height(8.dp))
 
-            // Line 2: from [icon] [appLabel] that
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(stringResource(R.string.from))
+                RuleCriteria(containsText, onCriteriaClick)
 
-                if (state.appItem?.icon != null) {
-                    Icon(
-                        painter = rememberDrawablePainter(state.appItem.icon),
-                        contentDescription = null,
-                        tint = Color.Unspecified, // show original icon color
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                }
-
-                WavyText(
-                    text = appText,
-                    onClick = onAppClick
-                )
-
-                Text(" that")
+                Spacer(Modifier.height(8.dp))
+                // Line 4: then [icon] [actionLabel]
+                RuleActions(state, onActionClick)
             }
-            Spacer(Modifier.height(8.dp))
-            // Line 3: contains "Hit Target" + [+] button
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                WavyText(
-                    text = containsText,
-                    onClick = onCriteriaClick
-                )
-
-                /*Spacer(Modifier.width(8.dp))
-
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clickable(onClick = onAddExtraCriteriaClick),
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "+",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }*/
-            }
-
-            Spacer(Modifier.height(8.dp))
-            // Line 4: then [icon] [actionLabel]
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(stringResource(R.string.then))
-
-                if (state.action?.icon != null) {
-                    val context = LocalContext.current
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = state.action.icon.drawable(context),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.background,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(6.dp))
-                }
-
-                WavyText(
-                    text = state.action?.title ?: stringResource(R.string.rule_do_nothing),
-                    onClick = onActionClick
-                )
-            }
-        }
     }
 }
 
 @Composable
-fun RecentMatchingNotificationsSection(
-    modifier: Modifier = Modifier
+private fun RuleCriteria(containsText: String, onCriteriaClick: () -> Unit) {
+    Row(verticalAlignment = Alignment.Top) {
+        WavyText(text = containsText, onClick = onCriteriaClick)
+    }
+}
+
+@Composable
+private fun RuleApps(
+    state: AddRuleScreenViewModel.AddRuleScreenState,
+    icon: Drawable?,
+    appText: String,
+    onAppClick: () -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-    ) {
+    Row(verticalAlignment = Alignment.Top) {
+        Text(stringResource(R.string.from))
+
+        if (state.appItem?.icon != null) {
+            Icon(
+                painter = rememberDrawablePainter(icon),
+                contentDescription = null,
+                tint = Color.Unspecified, // show original icon color
+                modifier = Modifier.size(22.dp).clip(CircleShape),
+            )
+            Spacer(Modifier.width(6.dp))
+        }
+
+        WavyText(text = appText, onClick = onAppClick)
+
+        Text(" that")
+    }
+}
+
+@Composable
+private fun RuleActions(
+    state: AddRuleScreenViewModel.AddRuleScreenState,
+    onActionClick: () -> Unit,
+) {
+    Row(verticalAlignment = Alignment.Top) {
+        Text(stringResource(R.string.then))
+
+        if (state.action?.icon != null) {
+            val context = LocalContext.current
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(24.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        painter = state.action.icon.drawable(context),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.width(6.dp))
+        }
+
+        WavyText(
+            text = state.action?.title ?: stringResource(R.string.rule_do_nothing),
+            onClick = onActionClick,
+        )
+    }
+}
+
+@Composable
+fun RecentMatchingEmptySection(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)) {
         Text(
             text = stringResource(R.string.rule_recent_matching_notifications),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
 
         Spacer(Modifier.height(8.dp))
@@ -319,36 +291,166 @@ fun RecentMatchingNotificationsSection(
         Text(
             text = stringResource(R.string.rule_no_recent_notifications_match),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+fun RecentMatchingNotificationsSection(
+    notifications: List<Pair<NotificationModel, AppItem>>,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)))
+
+        Spacer(Modifier.height(spacingXX))
+
+        if (notifications.isEmpty()) {
+            RecentMatchingEmptySection()
+        } else {
+            notifications.forEach { item ->
+                RecentNotificationCard(item = item)
+                Spacer(Modifier.height(spacingX))
+            }
+        }
+
+        Spacer(Modifier.height(spacingXX))
+    }
+}
+
+@Composable
+fun RecentNotificationCard(item: Pair<NotificationModel, AppItem>, modifier: Modifier = Modifier) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(spacingX).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                // Row: App Icon + App Name + Channel + Time
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = rememberDrawablePainter(item.second.icon),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp),
+                    )
+
+                    Spacer(Modifier.width(spacingSmall))
+
+                    Text(
+                        text = item.second.label,
+                        style =
+                            MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    Text(
+                        text = item.first.postTime.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Spacer(Modifier.height(spacing))
+                // Title
+                Text(
+                    text = item.first.title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                Spacer(Modifier.height(spacingSmall))
+                // Body message preview
+                Text(
+                    text = item.first.text,
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun AddRuleEmptyPreview() {
-    QuietTheme {
-        AddRuleContent(
-            state = AddRuleScreenViewModel.AddRuleScreenState(),
-        )
-    }
+private fun AddRuleEmptyPreview() {
+    QuietTheme { AddRuleContent(state = AddRuleScreenViewModel.AddRuleScreenState()) }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun AddRuleFilledPreview() {
+private fun AddRuleFilledPreview() {
     val context = LocalContext.current
     QuietTheme {
         AddRuleContent(
-            state = AddRuleScreenViewModel.AddRuleScreenState(
-                appItem = AppItem(
-                    label = "Microsoft Teams",
-                    packageName = "com.microsoft.teams",
-                    icon = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!
-                ),
-                criteriaText = listOf("meeting", "call"),
-                action = null
-            ),
-        )
+            state =
+                AddRuleScreenViewModel.AddRuleScreenState(
+                    appItem =
+                        AppItem(
+                            label = "Microsoft Teams",
+                            packageName = "com.microsoft.teams",
+                            icon =
+                                AppCompatResources.getDrawable(
+                                    context, R.drawable.ic_launcher_foreground)!!,
+                        ),
+                    criteriaText = listOf("meeting", "call"),
+                    action = null,
+                ))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AddRuleFilledWithRecentPreview() {
+    val context = LocalContext.current
+    QuietTheme {
+        AddRuleContent(
+            state =
+                AddRuleScreenViewModel.AddRuleScreenState(
+                    appItem =
+                        AppItem(
+                            label = "Microsoft Teams",
+                            packageName = "com.microsoft.teams",
+                            icon =
+                                AppCompatResources.getDrawable(
+                                    context, R.drawable.ic_launcher_foreground)!!,
+                        ),
+                    criteriaText = listOf("meeting", "call"),
+                    action = null,
+                    notificationList =
+                        listOf(
+                            Pair(
+                                NotificationModel(
+                                    sbnKey = "sbnKey",
+                                    packageName = "com.btpn.dc",
+                                    title = "Streaming Makin Hemat",
+                                    text =
+                                        "Karena ada cashback 50% untuk bayar layanan steaming favorit pakai Kartu Kredit Jenius. Khusus buat kamu, Cek di sini\uD83D\uDC47\uD83C\uDFFD\n",
+                                    postTime = 1764126566104,
+                                    saved = true,
+                                ),
+                                AppItem(
+                                    label = "Jenius",
+                                    packageName = "com.btpn.dc",
+                                    icon =
+                                        AppCompatResources.getDrawable(
+                                            context, R.drawable.ic_launcher_foreground)!!,
+                                ),
+                            )),
+                ))
     }
 }

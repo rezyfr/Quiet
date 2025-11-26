@@ -60,30 +60,22 @@ import id.rezyfr.quiet.ui.theme.spacingXX
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PickAppScreen(
-    viewModel: PickAppViewModel = koinViewModel()
-) {
+fun PickAppScreen(viewModel: PickAppViewModel = koinViewModel()) {
     val pm = LocalContext.current.packageManager
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     PickAppContent(
-        onQueryChange = {
-            viewModel.updateSearch(it)
-        },
+        onQueryChange = { viewModel.updateSearch(it) },
         allApps = state.filteredApps,
         selectedApp = state.selectedApp,
-        onSelectApp = {
-            viewModel.selectApp(it)
-        },
-        onConfirmSelection = {
-            viewModel.pickApp()
-        }
+        isLoading = state.isLoading,
+        onSelectApp = { viewModel.selectApp(it) },
+        onConfirmSelection = { viewModel.pickApp() },
     )
 
-    LaunchedEffect(Unit) {
-        viewModel.getInstalledApps(pm)
-    }
+    LaunchedEffect(Unit) { viewModel.getInstalledApps(pm) }
 }
+
 @Composable
 fun PickAppContent(
     modifier: Modifier = Modifier,
@@ -93,152 +85,147 @@ fun PickAppContent(
     selectedApp: AppItem? = null,
     onSelectApp: (AppItem) -> Unit = {},
     onPickAllApps: () -> Unit = {},
-    onConfirmSelection: () -> Unit = {}
+    onConfirmSelection: () -> Unit = {},
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(spacingXX)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(spacingXX)) {
+            // TITLE BLOCK
+            CompositionLocalProvider(
+                LocalTextStyle provides
+                    MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )) {
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text(stringResource(R.string.when_notification))
+                        Spacer(Modifier.width(spacingSmall))
+                        WavyText(text = stringResource(R.string.pick_is_from))
+                    }
+                }
+
+            Spacer(Modifier.height(spacingX))
+            // SEARCH BAR
+            SearchBar(onValueChange = onQueryChange)
+
+            Spacer(Modifier.height(spacingXH))
+
+            if (isLoading) {
+                // ===== Loading State =====
+                LoadingContent(Modifier.fillMaxWidth().weight(1f))
+
+                return@Column
+            }
+            // ===== After Loading =====
+            // SELECTED APP SECTION (optional)
+            if (selectedApp != null) {
+                SelectedAppSection(selectedApp)
+            }
+            // APPS GRID
+            PickAppsGrid(allApps, selectedApp, onSelectApp, Modifier.weight(1f))
+
+            Spacer(Modifier.height(spacingXH))
+            // BOTTOM BUTTON
+            if (selectedApp == null) {
+                PickButton(label = "Pick all apps", onClick = onPickAllApps)
+            } else {
+                PickButton(label = "Pick ${selectedApp.label}", onClick = onConfirmSelection)
+            }
+        }
+}
+
+@Composable
+private fun PickAppsGrid(
+    allApps: List<AppItem>,
+    selectedApp: AppItem?,
+    onSelectApp: (AppItem) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 140.dp),
+        verticalArrangement = Arrangement.spacedBy(spacingXX),
+        horizontalArrangement = Arrangement.spacedBy(spacingXX),
+        modifier = modifier,
     ) {
-        // TITLE BLOCK
-        CompositionLocalProvider(
-            LocalTextStyle provides MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        ) {
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(stringResource(R.string.when_notification))
-                Spacer(Modifier.width(spacingSmall))
-                WavyText(text = stringResource(R.string.pick_is_from))
-            }
-        }
-
-        Spacer(Modifier.height(spacingX))
-        // SEARCH BAR
-        SearchBar(
-            onValueChange = onQueryChange
-        )
-
-        Spacer(Modifier.height(spacingXH))
-
-        if (isLoading) {
-            // ===== Loading State =====
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 4.dp
-                )
-            }
-
-            Spacer(Modifier.height(spacingXH))
-
-            PickButton(
-                label = "Pick all apps",
-                enabled = false,
-                onClick = {}
-            )
-
-            return@Column
-        }
-        // ===== After Loading =====
-        // SELECTED APP SECTION (optional)
-        if (selectedApp != null) {
-            Text(
-                "Selected",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            Box(
-                Modifier.padding(end = spacingXX)
-            ) {
-                AppGridItem(
-                    app = selectedApp,
-                    selected = true,
-                    onClick = {}
-                )
-            }
-
-            Spacer(Modifier.height(spacingXH))
-
-            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-            Spacer(Modifier.height(spacingXH))
-        }
-        // APPS GRID
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            verticalArrangement = Arrangement.spacedBy(spacingXX),
-            horizontalArrangement = Arrangement.spacedBy(spacingXX),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(allApps) { item ->
-                AppGridItem(
-                    app = item,
-                    selected = selectedApp?.packageName == item.packageName,
-                    onClick = { onSelectApp(item) }
-                )
-            }
-        }
-
-        Spacer(Modifier.height(spacingXH))
-        // BOTTOM BUTTON
-        if (selectedApp == null) {
-            PickButton(
-                label = "Pick all apps",
-                onClick = onPickAllApps
-            )
-        } else {
-            PickButton(
-                label = "Pick ${selectedApp.label}",
-                onClick = onConfirmSelection
+        items(allApps) { item ->
+            AppGridItem(
+                app = item,
+                selected = selectedApp?.packageName == item.packageName,
+                onClick = { onSelectApp(item) },
             )
         }
     }
 }
+
+@Composable
+private fun SelectedAppSection(selectedApp: AppItem) {
+    Text(
+        "Selected",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+    )
+
+    Spacer(Modifier.height(10.dp))
+
+    Box(Modifier.padding(end = spacingXX)) {
+        AppGridItem(app = selectedApp, selected = true, onClick = {})
+    }
+
+    Spacer(Modifier.height(spacingXH))
+
+    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+    Spacer(Modifier.height(spacingXH))
+}
+
+@Composable
+private fun LoadingContent(modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 4.dp)
+    }
+
+    Spacer(Modifier.height(spacingXH))
+
+    PickButton(label = "Pick all apps", enabled = false, onClick = {})
+}
+
 @Composable
 fun AppGridItem(
     app: AppItem,
-    selected: Boolean,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    onClick: () -> Unit = {},
 ) {
-    val background = if (selected)
-        MaterialTheme.colorScheme.onBackground
-    else
-        MaterialTheme.colorScheme.surface
-    val textColor = if (selected)
-        MaterialTheme.colorScheme.surface
-    else
-        MaterialTheme.colorScheme.onSurface
+    val background =
+        if (selected) {
+            MaterialTheme.colorScheme.onBackground
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
+    val textColor =
+        if (selected) {
+            MaterialTheme.colorScheme.surface
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
 
     Surface(
         shape = RoundedCornerShape(spacingXX),
         color = background,
-        modifier = Modifier
-            .fillMaxWidth(0.5f)
-            .aspectRatio(1.2f)
-            .clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth(0.5f).aspectRatio(1.2f).clickable(onClick = onClick),
     ) {
         Column(
             Modifier.padding(spacingXX),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
                 painter = rememberDrawablePainter(app.icon),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
             )
 
             Spacer(Modifier.height(spacingH))
@@ -247,30 +234,29 @@ fun AppGridItem(
                 app.label,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = textColor,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
 }
+
 @Composable
 fun PickButton(
     label: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit = {},
 ) {
     PrimaryButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = spacingX),
+        modifier = modifier.fillMaxWidth().padding(bottom = spacingX),
         text = label,
         onClick = onClick,
-        enabled = enabled
+        enabled = enabled,
     )
 }
+
 @Composable
-fun SearchBar(
-    onValueChange: (String) -> Unit
-) {
+fun SearchBar(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}) {
     val query = remember { mutableStateOf("") }
     TextField(
         value = query.value,
@@ -282,74 +268,75 @@ fun SearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
         },
         placeholder = { Text(stringResource(R.string.pick_search_placeholder)) },
         singleLine = true,
         shape = RoundedCornerShape(18.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            cursorColor = MaterialTheme.colorScheme.primary,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
+        colors =
+            TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        modifier = modifier.fillMaxWidth().height(56.dp),
     )
 }
 
-data class AppItem(
-    val label: String,
-    val icon: Drawable,
-    val packageName: String
-)
+data class AppItem(val label: String, val icon: Drawable?, val packageName: String)
+
 @Preview(showBackground = true)
 @Composable
-fun PreviewPickAppInitContent() {
+private fun PreviewPickAppInitContent() {
     val context = LocalContext.current
     QuietTheme {
         PickAppContent(
-            allApps = listOf(
-                AppItem(
-                    "App 1",
-                    AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!,
-                    "com.example.app1"
-                ),
-                AppItem(
-                    "App 2",
-                    AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!,
-                    "com.example.app1"
-                ),
-            )
-        )
+            allApps =
+                listOf(
+                    AppItem(
+                        "App 1",
+                        AppCompatResources.getDrawable(
+                            context, R.drawable.ic_launcher_foreground)!!,
+                        "com.example.app1",
+                    ),
+                    AppItem(
+                        "App 2",
+                        AppCompatResources.getDrawable(
+                            context, R.drawable.ic_launcher_foreground)!!,
+                        "com.example.app1",
+                    ),
+                ))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewPickAppSelectedContent() {
+private fun PreviewPickAppSelectedContent() {
     val context = LocalContext.current
-    val selected = AppItem(
-        "App 1",
-        AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!,
-        "com.example.app1"
-    )
+    val selected =
+        AppItem(
+            "App 1",
+            AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!,
+            "com.example.app1",
+        )
     QuietTheme {
         PickAppContent(
             selectedApp = selected,
-            allApps = listOf(
-                selected,
-                AppItem(
-                    "App 2",
-                    AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)!!,
-                    "com.example.app1"
+            allApps =
+                listOf(
+                    selected,
+                    AppItem(
+                        "App 2",
+                        AppCompatResources.getDrawable(
+                            context, R.drawable.ic_launcher_foreground)!!,
+                        "com.example.app1",
+                    ),
                 ),
-            )
         )
     }
 }

@@ -11,7 +11,4 @@ data class ActionItem(
     @DrawableRes val icon: Int,
 )
 
-data class ActionCategory(
-    val name: String,
-    val items: List<ActionItem>,
-)
+data class ActionCategory(val name: String, val items: List<ActionItem>)

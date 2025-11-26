@@ -1,4 +1,3 @@
-
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -7,27 +6,19 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-/**
- * Configure base Kotlin with Android options
- */
-internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
-) {
+/** Configure base Kotlin with Android options */
+internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
         compileSdk = 36
 
-        defaultConfig {
-            minSdk = 26
-        }
+        defaultConfig { minSdk = 26 }
 
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }
 
-        lint {
-            abortOnError = false
-        }
+        lint { abortOnError = false }
 
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
@@ -44,8 +35,7 @@ internal fun Project.configureKotlinAndroid(
                         "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi",
                         "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
                         "-opt-in=androidx.lifecycle.compose.ExperimentalLifecycleComposeApi",
-                    )
-                )
+                    ))
 
                 jvmTarget.set(JvmTarget.JVM_17)
             }

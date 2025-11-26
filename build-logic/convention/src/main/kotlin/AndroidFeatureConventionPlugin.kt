@@ -5,21 +5,21 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 
 class AndroidFeatureConventionPlugin : Plugin<Project> {
-  override fun apply(target: Project) {
-    with(target) {
-      pluginManager.apply {
-        apply("com.android.library")
-        apply("org.jetbrains.kotlin.android")
-      }
+    override fun apply(target: Project) {
+        with(target) {
+            pluginManager.apply {
+                apply("com.android.library")
+                apply("org.jetbrains.kotlin.android")
+            }
 
-      val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-      dependencies {
-        add("implementation", project(":core:navigation"))
+            dependencies {
+                add("implementation", project(":core:navigation"))
 
-        add("implementation", libs.findLibrary("kotlinx.coroutines.android").get())
-        add("implementation", libs.findLibrary("koin.android").get())
-      }
+                add("implementation", libs.findLibrary("kotlinx.coroutines.android").get())
+                add("implementation", libs.findLibrary("koin.android").get())
+            }
+        }
     }
-  }
 }

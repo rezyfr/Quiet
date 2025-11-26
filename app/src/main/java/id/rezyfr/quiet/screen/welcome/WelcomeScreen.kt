@@ -2,6 +2,7 @@ package id.rezyfr.quiet.screen.welcome
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
@@ -45,7 +46,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import id.rezyfr.quiet.App
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXH
@@ -59,9 +59,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("BatteryLife")
 @Composable
-fun WelcomeScreen(
-    viewModel: WelcomeViewModel = koinViewModel()
-) {
+fun WelcomeScreen(modifier: Modifier = Modifier, viewModel: WelcomeViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -79,9 +77,7 @@ fun WelcomeScreen(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose  {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     val batterySettingsLauncher =
@@ -93,71 +89,84 @@ fun WelcomeScreen(
             }
         }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            // After the user responds, check the notification status again
-            // The ViewModel will update the state based on the new permission status
-            viewModel.checkNotification()
-        }
-    )
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                // After the user responds, check the notification status again
+                // The ViewModel will update the state based on the new permission status
+                viewModel.checkNotification()
+            },
+        )
 
-    Surface(
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(spacingXX)
-        ) {
+    WelcomeContent(
+        state = state,
+        context = context,
+        onNotificationClick = {
+            // request notification permission
+            if (!state.notificationAllowed &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                viewModel.checkNotification()
+            }
+        },
+        onBackgroundClick = {
+            requestDisableBatteryOptimization(
+                context = context,
+                fallbackLauncher = batterySettingsLauncher,
+            )
+        },
+        onEnableClick = {
+            if (!isNotificationAccessGranted(context)) {
+                val intent = Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                context.startActivity(intent)
+            }
+        },
+    )
+}
+
+@Composable
+fun WelcomeContent(
+    state: WelcomeViewModel.UiState,
+    context: Context,
+    onNotificationClick: () -> Unit,
+    onBackgroundClick: () -> Unit,
+    onEnableClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(modifier = modifier, color = MaterialTheme.colorScheme.background) {
+        Column(modifier = Modifier.fillMaxSize().padding(spacingXX)) {
             Text(
                 stringResource(R.string.welcome_header),
-                style = MaterialTheme.typography.headlineMedium
-            )
+                style = MaterialTheme.typography.headlineMedium)
 
             Spacer(Modifier.height(spacingX))
-            Text(
-                stringResource(R.string.welcome_body),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Text(stringResource(R.string.welcome_body), style = MaterialTheme.typography.bodyLarge)
             Spacer(Modifier.height(spacingXXX))
             RequiredAccessCard(
                 index = 1,
                 title = R.string.welcome_allow_notifications_title,
                 body = R.string.welcome_allow_notifications_desc,
-                allowed = state.notificationAllowed || isNotificationAllowed(context)
-            ) {
-                // request notification permission
-                if (!state.notificationAllowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    viewModel.checkNotification()
-                }
-            }
+                allowed = state.notificationAllowed || isNotificationAllowed(context),
+                onClick = onNotificationClick,
+            )
             Spacer(Modifier.height(spacingXX))
             RequiredAccessCard(
                 index = 2,
                 title = R.string.welcome_allow_background_title,
                 body = R.string.welcome_allow_background_desc,
-                allowed = state.backgroundAllowed || isIgnoringBatteryOptimizations(context)
-            ) {
-                requestDisableBatteryOptimization(
-                    context = context,
-                    fallbackLauncher = batterySettingsLauncher
-                )
-            }
+                allowed = state.backgroundAllowed || isIgnoringBatteryOptimizations(context),
+                onClick = onBackgroundClick,
+            )
             Spacer(Modifier.height(spacingXX))
             RequiredAccessCard(
                 index = 3,
                 title = R.string.welcome_enable_title,
                 body = R.string.welcome_enable_desc,
-                allowed = state.enabled || isNotificationAccessGranted(context)
-            ) {
-                if (!isNotificationAccessGranted(context)) {
-                    val intent = Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                    context.startActivity(intent)
-                }
-            }
+                allowed = state.enabled || isNotificationAccessGranted(context),
+                onClick = onEnableClick,
+            )
             Spacer(Modifier.height(spacingX))
         }
     }
@@ -165,58 +174,50 @@ fun WelcomeScreen(
 
 @Composable
 fun RequiredAccessCard(
-    modifier: Modifier = Modifier,
     @StringRes title: Int,
     @StringRes body: Int,
+    modifier: Modifier = Modifier,
     index: Int = 1,
     allowed: Boolean = false,
-    onClick: () -> Unit = { }
+    onClick: () -> Unit = {},
 ) {
-    val contentColor = if (allowed) MaterialTheme.colorScheme.onSecondaryContainer
-    else MaterialTheme.colorScheme.onPrimaryContainer
-    val containerColor = if (allowed) MaterialTheme.colorScheme.secondaryContainer
-    else MaterialTheme.colorScheme.primaryContainer
+    val contentColor =
+        if (allowed) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        }
+    val containerColor =
+        if (allowed) {
+            MaterialTheme.colorScheme.secondaryContainer
+        } else {
+            MaterialTheme.colorScheme.primaryContainer
+        }
     val badgeText = if (allowed) "✓" else index.toString()
     Card(
         shape = MaterialTheme.shapes.large,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(true, onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        )
+        modifier = modifier.fillMaxWidth().clickable(true, onClick = onClick),
+        colors =
+            CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor),
     ) {
         Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(spacingXH),
-            verticalAlignment = Alignment.CenterVertically
+            Modifier.fillMaxWidth().padding(spacingXH),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 badgeText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(
-                        Color.Transparent, CircleShape
-                    )
-                    .border(
-                        BorderStroke(
-                            1.5.dp,
-                            LocalContentColor.current
-                        ),
-                        CircleShape
-                    )
-                    .wrapContentSize(align = Alignment.Center)
+                modifier =
+                    Modifier.size(20.dp)
+                        .background(Color.Transparent, CircleShape)
+                        .border(BorderStroke(1.5.dp, LocalContentColor.current), CircleShape)
+                        .wrapContentSize(align = Alignment.Center),
             )
             Spacer(Modifier.width(spacingX))
             Column {
                 Text(stringResource(title), color = contentColor, fontWeight = FontWeight.SemiBold)
-                AnimatedVisibility(!allowed) {
-                    Text(stringResource(body), color = contentColor)
-                }
+                AnimatedVisibility(!allowed) { Text(stringResource(body), color = contentColor) }
             }
         }
     }
@@ -224,6 +225,6 @@ fun RequiredAccessCard(
 
 @Preview(showBackground = true)
 @Composable
-fun WelcomeScreenPreview() {
+private fun WelcomeScreenPreview() {
     WelcomeScreen()
 }
