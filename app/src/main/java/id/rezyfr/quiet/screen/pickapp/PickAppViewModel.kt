@@ -16,10 +16,9 @@ import kotlinx.coroutines.withContext
 class PickAppViewModel(
     private val navigator: AppComposeNavigator
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(PickAppUiState())
     val state: StateFlow<PickAppUiState> = _state
-
+    private var _pendingQuery = ""
     fun getInstalledApps(packageManager: PackageManager) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -29,21 +28,37 @@ class PickAppViewModel(
                 it.copy(
                     isLoading = false,
                     allApps = apps,
-                    filteredApps = apps
+                    filteredApps = if (_pendingQuery.isNotEmpty()) {
+                        apps.filter { apps ->
+                            apps.label.contains(
+                                _pendingQuery,
+                                ignoreCase = true
+                            )
+                        }
+                    } else {
+                        apps
+                    }
                 )
             }
+            _pendingQuery = ""
         }
     }
 
     fun updateSearch(query: String) {
-        _state.update { it.copy(
-            searchQuery = query,
-            filteredApps = if (query.isNotEmpty()) {
-                it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
-            } else {
-                it.allApps
-            }
-        ) }
+        if (_state.value.isLoading) {
+            _pendingQuery = query
+            return
+        }
+        _state.update {
+            it.copy(
+                searchQuery = query,
+                filteredApps = if (query.isNotEmpty()) {
+                    it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
+                } else {
+                    it.allApps
+                }
+            )
+        }
     }
 
     fun selectApp(app: AppItem) {
@@ -51,7 +66,11 @@ class PickAppViewModel(
     }
 
     fun pickApp() {
-        navigator.navigateBackWithResult("key_pick_apps", _state.value.selectedApp?.packageName, QuietScreens.AddRules.route)
+        navigator.navigateBackWithResult(
+            "key_pick_apps",
+            _state.value.selectedApp?.packageName,
+            QuietScreens.AddRules.route
+        )
     }
 
     data class PickAppUiState(

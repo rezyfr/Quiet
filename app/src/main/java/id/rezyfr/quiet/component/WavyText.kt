@@ -70,6 +70,7 @@ fun WavyLine(modifier: Modifier = Modifier, color: Color = Color.Black) {
             repeatMode = RepeatMode.Restart
         )
     )
+
     val showPoints by remember { mutableStateOf(false) }
 
     Canvas(

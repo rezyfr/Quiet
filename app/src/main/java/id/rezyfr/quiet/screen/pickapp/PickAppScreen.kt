@@ -72,6 +72,7 @@ fun PickAppScreen(
         },
         allApps = state.filteredApps,
         selectedApp = state.selectedApp,
+        isLoading = state.isLoading,
         onSelectApp = {
             viewModel.selectApp(it)
         },
