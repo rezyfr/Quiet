@@ -13,27 +13,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun QuietBackground(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
+fun QuietBackground(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val color = LocalBackgroundTheme.current.color
     val tonalElevation = LocalBackgroundTheme.current.tonalElevation
     Surface(
         color = if (color == Color.Unspecified) Color.Transparent else color,
         tonalElevation = if (tonalElevation == Dp.Unspecified) 0.dp else tonalElevation,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
-        CompositionLocalProvider(LocalAbsoluteTonalElevation provides 0.dp) {
-            content()
-        }
+        CompositionLocalProvider(LocalAbsoluteTonalElevation provides 0.dp) { content() }
     }
 }
 
 @Immutable
 data class BackgroundTheme(
     val color: Color = Color.Unspecified,
-    val tonalElevation: Dp = Dp.Unspecified
+    val tonalElevation: Dp = Dp.Unspecified,
 )
 
 val LocalBackgroundTheme = staticCompositionLocalOf { BackgroundTheme() }

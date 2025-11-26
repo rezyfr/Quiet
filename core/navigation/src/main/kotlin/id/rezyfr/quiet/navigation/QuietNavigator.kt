@@ -12,30 +12,16 @@ class QuietComposeNavigator : AppComposeNavigator() {
 
     override fun navigateAndClearBackStack(route: String) {
         navigationCommands.tryEmit(
-            ComposeNavigationCommand.NavigateToRoute(
-                route,
-                navOptions {
-                    popUpTo(0)
-                }
-            )
-        )
+            ComposeNavigationCommand.NavigateToRoute(route, navOptions { popUpTo(0) }))
     }
 
     override fun popUpTo(route: String, inclusive: Boolean) {
         navigationCommands.tryEmit(ComposeNavigationCommand.PopUpToRoute(route, inclusive))
     }
 
-    override fun <T> navigateBackWithResult(
-        key: String,
-        result: T,
-        route: String?
-    ) {
+    override fun <T> navigateBackWithResult(key: String, result: T, route: String?) {
         navigationCommands.tryEmit(
             ComposeNavigationCommand.NavigateUpWithResult(
-                key = key,
-                result = result,
-                route = route
-            )
-        )
+                key = key, result = result, route = route))
     }
 }

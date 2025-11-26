@@ -5,8 +5,5 @@ import androidx.navigation.compose.composable
 import id.rezyfr.quiet.screen.main.MainBottomPager
 
 fun NavGraphBuilder.quietHomeNavigation() {
-    composable(route = QuietScreens.Home.name) {
-        MainBottomPager()
-    }
+    composable(route = QuietScreens.Home.name) { MainBottomPager() }
 }
-

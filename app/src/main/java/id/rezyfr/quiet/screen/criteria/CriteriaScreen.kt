@@ -58,9 +58,7 @@ import id.rezyfr.quiet.util.drawable
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun CriteriaScreen(
-    viewModel: CriteriaViewModel = koinViewModel()
-) {
+fun CriteriaScreen(viewModel: CriteriaViewModel = koinViewModel()) {
     var showPhraseDialog by remember { mutableStateOf(false) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -70,112 +68,96 @@ fun CriteriaScreen(
             onDone = { newPhrase ->
                 viewModel.addPhrase(newPhrase)
                 showPhraseDialog = false
-            }
+            },
         )
     }
 
     CriteriaContent(
-        onPhraseClick = {
-            showPhraseDialog = true
-        },
-        onRemovePhrase = {
-            viewModel.removePhrase(it)
-        },
-        onApplyClick = {
-            viewModel.navigateToAddRules()
-        },
-        state = state
+        onPhraseClick = { showPhraseDialog = true },
+        onRemovePhrase = { viewModel.removePhrase(it) },
+        onApplyClick = { viewModel.navigateToAddRules() },
+        state = state,
     )
 }
 
 @Composable
 fun CriteriaContent(
+    state: CriteriaViewModel.State,
     modifier: Modifier = Modifier,
     onPhraseClick: () -> Unit = {},
     onRemovePhrase: (String) -> Unit = {},
     onApplyClick: () -> Unit = {},
-    state: CriteriaViewModel.State,
 ) {
     Scaffold(
-        topBar = {
-            CompositionLocalProvider(
-                LocalTextStyle provides MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-            ) {
-                Column(Modifier.padding(spacingXX)) {
-                    Text(stringResource(R.string.when_notification))
-                    Spacer(
-                        Modifier.height(
-                            spacing
-                        )
-                    )
-                    WavyText(text = stringResource(R.string.criteria_contains_any_of))
-                }
-            }
-        },
-        bottomBar = {
-            Column(
-                Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(spacingXX),
-            ) {
-                Text(
-                    text = stringResource(R.string.criteria_apply_filter_info),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(spacingX))
-                PrimaryButton(
-                    modifier =
-                        Modifier.fillMaxWidth(), text = stringResource(R.string.apply_filter),
-                    onClick = onApplyClick
-                )
-            }
-        }) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(it),
-            contentAlignment = Alignment.Center
-        ) {
+        modifier = modifier,
+        topBar = { CriteriaTopBar() },
+        bottomBar = { CriteriaBottomBar(onApplyClick) },
+    ) {
+        Box(modifier = Modifier.fillMaxSize().padding(it), contentAlignment = Alignment.Center) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacingX)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = spacingX),
             ) {
                 PhraseListSection(
-                    state.phrase,
-                    onRemove = { phrase ->
-                        onRemovePhrase(phrase)
-                    }
-                )
+                    phrases = state.phrase, onRemove = { phrase -> onRemovePhrase(phrase) })
                 Spacer(Modifier.height(spacingXXX))
                 CriteriaGridItem(
-                    modifier = Modifier
-                        .fillMaxWidth(0.3f),
-                    criteria = CriteriaItem(
-                        name = stringResource(R.string.criteria_phrase_title),
-                        icon = R.drawable.ic_double_quotes,
-                        desc = stringResource(R.string.criteria_phrase_desc)
-                    ),
+                    modifier = Modifier.fillMaxWidth(0.3f),
+                    criteria =
+                        CriteriaItem(
+                            name = stringResource(R.string.criteria_phrase_title),
+                            icon = R.drawable.ic_double_quotes,
+                            desc = stringResource(R.string.criteria_phrase_desc),
+                        ),
                     isCriteriaEmpty = state.phrase.isEmpty(),
-                    onClick = onPhraseClick
+                    onClick = onPhraseClick,
                 )
             }
         }
     }
 }
+
+@Composable
+private fun CriteriaBottomBar(onApplyClick: () -> Unit) {
+    Column(Modifier.background(MaterialTheme.colorScheme.surface).padding(spacingXX)) {
+        Text(
+            text = stringResource(R.string.criteria_apply_filter_info),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(spacingX))
+        PrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.apply_filter),
+            onClick = onApplyClick,
+        )
+    }
+}
+
+@Composable
+private fun CriteriaTopBar() {
+    CompositionLocalProvider(
+        LocalTextStyle provides
+            MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )) {
+            Column(Modifier.padding(spacingXX)) {
+                Text(stringResource(R.string.when_notification))
+                Spacer(Modifier.height(spacing))
+                WavyText(text = stringResource(R.string.criteria_contains_any_of))
+            }
+        }
+}
+
 @Composable
 fun CriteriaGridItem(
-    modifier: Modifier = Modifier,
     criteria: CriteriaItem,
+    modifier: Modifier = Modifier,
     isCriteriaEmpty: Boolean = false,
-    onClick: () -> Unit
+    onClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -183,9 +165,7 @@ fun CriteriaGridItem(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     criteria.desc,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        lineHeight = 20.sp
-                    ),
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                     textAlign = TextAlign.Center,
@@ -193,67 +173,61 @@ fun CriteriaGridItem(
                 Icon(
                     R.drawable.ic_arrow_down.drawable(context),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
                 )
                 Spacer(Modifier.height(spacingXX))
             }
         }
         Surface(
-            shape =
-                RoundedCornerShape(spacingH),
+            shape = RoundedCornerShape(spacingH),
             color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         ) {
             Column(
                 Modifier.padding(vertical = spacingX, horizontal = spacingH),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(
                     R.drawable.ic_double_quotes.drawable(context),
                     contentDescription = null,
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
                 )
                 Spacer(Modifier.height(spacingSmall))
                 Text(
                     criteria.name,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
     }
 }
+
 @Composable
-fun PhraseDialog(
-    onDismiss: () -> Unit,
-    onDone: (String) -> Unit
-) {
+fun PhraseDialog(onDismiss: () -> Unit, onDone: (String) -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
-        PhraseDialogContent(onDismiss, onDone = onDone)
+        PhraseDialogContent(onDismiss = onDismiss, onDone = onDone)
     }
 }
+
 @Composable
-fun PhraseDialogContent(onDismiss: () -> Unit = {}, onDone: (String) -> Unit = {}) {
+fun PhraseDialogContent(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit = {},
+    onDone: (String) -> Unit = {},
+) {
     var text by remember { mutableStateOf("") }
     Surface(
         shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier
-            .padding(spacingXX)
-            .fillMaxWidth()
+        modifier = modifier.padding(spacingXX).fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.padding(spacingXX)
-        ) {
+        Column(modifier = Modifier.padding(spacingXX)) {
             // Title
-            WavyText(
-                text = stringResource(R.string.criteria_notification_contains),
-            )
+            WavyText(text = stringResource(R.string.criteria_notification_contains))
 
             Spacer(Modifier.height(spacingX))
             // Input
@@ -261,150 +235,132 @@ fun PhraseDialogContent(onDismiss: () -> Unit = {}, onDone: (String) -> Unit = {
                 value = text,
                 onValueChange = { text = it },
                 placeholder = {
-                    Text(
-                        stringResource(R.string.start_typing),
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text(stringResource(R.string.start_typing), fontWeight = FontWeight.SemiBold)
                 },
                 shape = RoundedCornerShape(16.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                modifier = Modifier.fillMaxWidth()
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(Modifier.height(spacingXX))
             // Done button
             PrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier = Modifier.fillMaxWidth().height(52.dp),
                 text = stringResource(R.string.done),
-                onClick = {
-                    onDone(text)
-                }
+                onClick = { onDone(text) },
             )
 
             Spacer(Modifier.height(spacingXX))
             // Cancel
             Text(
                 text = stringResource(R.string.cancel),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .clickable(onClick = onDismiss),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally).clickable(onClick = onDismiss),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold
-                )
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
             )
         }
     }
 }
+
 @Composable
 fun PhraseListSection(
-    phrases: List<String>,
-    onRemove: (String) -> Unit
+    onRemove: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    phrases: List<String> = emptyList(),
 ) {
     if (phrases.isEmpty()) return
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         phrases.forEachIndexed { index, phrase ->
-            PhraseCard(
-                text = phrase,
-                showOr = index != 0,
-                onRemove = { onRemove(phrase) }
-            )
+            PhraseCard(text = phrase, showOr = index != 0, onRemove = { onRemove(phrase) })
             Spacer(Modifier.height(spacing))
         }
     }
 }
+
 @Composable
 fun PhraseCard(
     text: String,
-    showOr: Boolean,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+    showOr: Boolean = false,
 ) {
-    Box {
+    Box(modifier) {
         Surface(
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.background,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = Modifier
-                .padding(spacing)
-                .fillMaxWidth()
+            modifier = Modifier.padding(spacing).fillMaxWidth(),
         ) {
             Row(
-                modifier = Modifier
-                    .padding(spacingX)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(spacingX).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    style =
+                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 )
 
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clickable(onClick = onRemove)
+                    modifier = Modifier.size(22.dp).clickable(onClick = onRemove),
                 )
             }
         }
 
         if (showOr) {
             Box(
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Text(
-                    "or",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = spacing)
-                )
-            }
+                Modifier.align(Alignment.TopCenter)
+                    .background(MaterialTheme.colorScheme.background)) {
+                    Text(
+                        "or",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(horizontal = spacing),
+                    )
+                }
         }
     }
 }
 
 data class CriteriaItem(val name: String, @DrawableRes val icon: Int, val desc: String)
+
 @Composable
 @Preview(showBackground = true)
-fun PreviewCriteriaEmptyContent() {
+private fun PreviewCriteriaEmptyContent() {
+    QuietTheme { CriteriaContent(state = CriteriaViewModel.State()) }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewCriteriaFilledContent() {
     QuietTheme {
-        CriteriaContent(state = CriteriaViewModel.State())
+        CriteriaContent(
+            state = CriteriaViewModel.State(listOf("Example", "Example 2", "Example 3")))
     }
 }
+
 @Composable
 @Preview(showBackground = true)
-fun PreviewCriteriaFilledContent() {
-    QuietTheme {
-        CriteriaContent(state = CriteriaViewModel.State(listOf("Example", "Example 2", "Example 3")))
-    }
-}
-@Composable
-@Preview(showBackground = true)
-fun PreviewPhraseDialog() {
+private fun PreviewPhraseDialog() {
     QuietTheme {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(20.dp),
+            modifier =
+                Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(20.dp),
             contentAlignment = Alignment.Center,
         ) {
             PhraseDialogContent()

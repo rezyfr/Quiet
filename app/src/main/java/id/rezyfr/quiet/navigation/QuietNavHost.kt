@@ -15,42 +15,28 @@ import id.rezyfr.quiet.util.isNotificationAccessGranted
 import id.rezyfr.quiet.util.isNotificationAllowed
 
 @Composable
-fun QuietNavHost(
-    navHostController: NavHostController
-) {
+fun QuietNavHost(navHostController: NavHostController) {
     val context = LocalContext.current
-    val startDestination = if(isNotificationAccessGranted(context) && isNotificationAllowed(context) && isIgnoringBatteryOptimizations(context)) {
-        QuietScreens.Home.route
-    } else {
-        QuietScreens.Welcome.route
-    }
-
-    NavHost(
-        navController = navHostController,
-        startDestination = startDestination
-    ) {
-        composable(route = QuietScreens.Welcome.route) {
-            WelcomeScreen()
+    val startDestination =
+        if (isNotificationAccessGranted(context) &&
+            isNotificationAllowed(context) &&
+            isIgnoringBatteryOptimizations(context)) {
+            QuietScreens.Home.route
+        } else {
+            QuietScreens.Welcome.route
         }
+
+    NavHost(navController = navHostController, startDestination = startDestination) {
+        composable(route = QuietScreens.Welcome.route) { WelcomeScreen() }
 
         quietHomeNavigation()
 
-        composable(route = QuietScreens.AddRules.route) {
-            AddRuleScreen(
-                navHostController
-            )
-        }
+        composable(route = QuietScreens.AddRules.route) { AddRuleScreen(navHostController) }
 
-        composable(route = QuietScreens.PickApp.route) {
-            PickAppScreen()
-        }
+        composable(route = QuietScreens.PickApp.route) { PickAppScreen() }
 
-        composable(route = QuietScreens.Criteria.route) {
-            CriteriaScreen()
-        }
+        composable(route = QuietScreens.Criteria.route) { CriteriaScreen() }
 
-        composable(route = QuietScreens.Action.route) {
-            ActionPickerScreen()
-        }
+        composable(route = QuietScreens.Action.route) { ActionPickerScreen() }
     }
 }

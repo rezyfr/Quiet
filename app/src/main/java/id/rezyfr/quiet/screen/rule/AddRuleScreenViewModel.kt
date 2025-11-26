@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class AddRuleScreenViewModel(
     private val navigator: AppComposeNavigator,
-    private val repository: NotificationRepository
+    private val repository: NotificationRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddRuleScreenState())
     val state = _state.asStateFlow()
@@ -47,12 +47,18 @@ class AddRuleScreenViewModel(
 
     fun getRecentNotification(pm: PackageManager, packageName: String?) {
         viewModelScope.launch {
-            repository.getNotification(packageName)
-                .collect { notifEntity ->
-                    _state.update {
-                        it.copy(
-                            notificationList = notifEntity.map { notif ->
-                                val info = pm.getApplicationInfo(notif.packageName, 0)
+            repository.getNotification(packageName).collect { notifEntity ->
+                _state.update {
+                    it.copy(
+                        notificationList =
+                            notifEntity.map { notif ->
+                                val info =
+                                    try {
+                                        pm.getApplicationInfo(notif.packageName, 0)
+                                    } catch (e: PackageManager.NameNotFoundException) {
+                                        print(e)
+                                        null
+                                    }
 
                                 Pair(
                                     NotificationModel(
@@ -64,22 +70,21 @@ class AddRuleScreenViewModel(
                                         notif.saved,
                                     ),
                                     AppItem(
-                                        label = info.loadLabel(pm).toString(),
-                                        icon = info.loadIcon(pm),
-                                        packageName = notif.packageName
-                                    )
+                                        label = info?.loadLabel(pm).toString(),
+                                        icon = info?.loadIcon(pm),
+                                        packageName = notif.packageName,
+                                    ),
                                 )
-                            }
-                        )
-                    }
+                            })
                 }
+            }
         }
     }
 
     data class AddRuleScreenState(
         val appItem: AppItem? = null,
-        val criteriaText: List<String> = emptyList(),         // null -> "anything"
+        val criteriaText: List<String> = emptyList(),
         val action: ActionItem? = null,
-        val notificationList: List<Pair<NotificationModel, AppItem>> = emptyList()
+        val notificationList: List<Pair<NotificationModel, AppItem>> = emptyList(),
     )
 }

@@ -17,20 +17,21 @@ fun isNotificationAccessGranted(context: Context): Boolean {
     return enabledListeners?.contains(context.packageName) == true
 }
 
-fun isNotificationAllowed(context: Context) : Boolean {
+fun isNotificationAllowed(context: Context): Boolean {
     return NotificationManagerCompat.from(context).areNotificationsEnabled()
 }
 
 fun requestDisableBatteryOptimization(
     context: Context,
-    fallbackLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?
+    fallbackLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>?,
 ) {
     if (isIgnoringBatteryOptimizations(context)) return
 
     try {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = "package:${context.packageName}".toUri()
-        }
+        val intent =
+            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = "package:${context.packageName}".toUri()
+            }
         context.startActivity(intent)
     } catch (_: Exception) {
         // Some OEMs might not support this – open settings list instead

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.parcelize)
     kotlin("plugin.serialization")
+    alias(libs.plugins.detekt.plugin)
 }
 
 android {
@@ -41,6 +42,13 @@ android {
     }
 }
 
+detekt {
+    toolVersion = "1.23.7"
+    config.setFrom(file("../config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    autoCorrect = true
+}
+
 dependencies {
     implementation(project(":core:navigation"))
     implementation(libs.androidx.core.ktx)
@@ -69,4 +77,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    detektPlugins(libs.detekt.formatting)
 }

@@ -6,5 +6,5 @@ data class NotificationModel(
     val title: String,
     val text: String,
     val postTime: Long,
-    val saved: Boolean
+    val saved: Boolean,
 )

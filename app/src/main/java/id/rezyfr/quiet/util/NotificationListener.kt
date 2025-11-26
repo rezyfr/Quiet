@@ -19,12 +19,9 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
 
     override fun onListenerConnected() {
         try {
-            activeNotifications
-                .takeLast(30)
-                .map(::createNotificationItem)
-                .forEach {
-                    dataMap[it.sbnKey] = it
-                }
+            activeNotifications.takeLast(30).map(::createNotificationItem).forEach {
+                dataMap[it.sbnKey] = it
+            }
             saveBulkNotification()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -69,7 +66,7 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
             title = "${sbn.getTitleBig()}\n${sbn.getTitle()}".trim(),
             text = sbn.getText(),
             postTime = sbn.postTime,
-            saved = false
+            saved = false,
         )
     }
 }

@@ -13,12 +13,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class PickAppViewModel(
-    private val navigator: AppComposeNavigator
-) : ViewModel() {
+class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel() {
     private val _state = MutableStateFlow(PickAppUiState())
     val state: StateFlow<PickAppUiState> = _state
     private var _pendingQuery = ""
+
     fun getInstalledApps(packageManager: PackageManager) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -28,16 +27,14 @@ class PickAppViewModel(
                 it.copy(
                     isLoading = false,
                     allApps = apps,
-                    filteredApps = if (_pendingQuery.isNotEmpty()) {
-                        apps.filter { apps ->
-                            apps.label.contains(
-                                _pendingQuery,
-                                ignoreCase = true
-                            )
-                        }
-                    } else {
-                        apps
-                    }
+                    filteredApps =
+                        if (_pendingQuery.isNotEmpty()) {
+                            apps.filter { apps ->
+                                apps.label.contains(_pendingQuery, ignoreCase = true)
+                            }
+                        } else {
+                            apps
+                        },
                 )
             }
             _pendingQuery = ""
@@ -52,11 +49,12 @@ class PickAppViewModel(
         _state.update {
             it.copy(
                 searchQuery = query,
-                filteredApps = if (query.isNotEmpty()) {
-                    it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
-                } else {
-                    it.allApps
-                }
+                filteredApps =
+                    if (query.isNotEmpty()) {
+                        it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
+                    } else {
+                        it.allApps
+                    },
             )
         }
     }
@@ -69,7 +67,7 @@ class PickAppViewModel(
         navigator.navigateBackWithResult(
             "key_pick_apps",
             _state.value.selectedApp?.packageName,
-            QuietScreens.AddRules.route
+            QuietScreens.AddRules.route,
         )
     }
 
@@ -81,24 +79,24 @@ class PickAppViewModel(
         val searchQuery: String = "",
     )
 
-    private suspend fun loadApps(pm: PackageManager): List<AppItem> = withContext(Dispatchers.IO) {
-        val intent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
+    private suspend fun loadApps(pm: PackageManager): List<AppItem> =
+        withContext(Dispatchers.IO) {
+            val intent =
+                Intent(Intent.ACTION_MAIN, null).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+            val resolveInfos = pm.queryIntentActivities(intent, 0)
+
+            resolveInfos
+                .sortedBy { it.loadLabel(pm).toString().lowercase() }
+                .map { info ->
+                    val label = info.loadLabel(pm).toString()
+                    val packageName = info.activityInfo.packageName
+                    val icon = info.loadIcon(pm)
+
+                    AppItem(
+                        label = label,
+                        icon = icon, // keep raw drawable here
+                        packageName = packageName,
+                    )
+                }
         }
-        val resolveInfos = pm.queryIntentActivities(intent, 0)
-
-        resolveInfos
-            .sortedBy { it.loadLabel(pm).toString().lowercase() }
-            .map { info ->
-                val label = info.loadLabel(pm).toString()
-                val packageName = info.activityInfo.packageName
-                val icon = info.loadIcon(pm)
-
-                AppItem(
-                    label = label,
-                    icon = icon,                 // keep raw drawable here
-                    packageName = packageName
-                )
-            }
-    }
 }

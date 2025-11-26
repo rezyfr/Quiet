@@ -8,15 +8,11 @@ import id.rezyfr.quiet.navigation.QuietNavHost
 import id.rezyfr.quiet.ui.theme.QuietTheme
 
 @Composable
-fun App(
-    composeNavigator: AppComposeNavigator
-) {
+fun App(composeNavigator: AppComposeNavigator) {
     QuietTheme {
         val navController = rememberNavController()
 
-        LaunchedEffect(Unit) {
-            composeNavigator.handleNavigationCommands(navController)
-        }
+        LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navController) }
 
         QuietNavHost(navController)
     }

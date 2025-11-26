@@ -9,12 +9,11 @@ import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     private val navigator by inject<AppComposeNavigator>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        setContent {
-            App(navigator)
-        }
+        setContent { App(navigator) }
     }
 }
