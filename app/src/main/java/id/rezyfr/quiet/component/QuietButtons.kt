@@ -1,6 +1,6 @@
 package id.rezyfr.quiet.component
 
-import android.R.attr.onClick
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import id.rezyfr.quiet.ui.theme.QuietTheme
+import id.rezyfr.quiet.ui.theme.spacingX
+import id.rezyfr.quiet.ui.theme.spacingXX
 
 @Composable
 fun PrimaryButton(
@@ -28,6 +30,7 @@ fun PrimaryButton(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
+        contentPadding = PaddingValues(horizontal = spacingXX, vertical = spacingX),
         shape = RoundedCornerShape(16.dp)
     ) {
         Text(text, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)

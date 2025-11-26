@@ -30,4 +30,6 @@
     <string name="cancel">CANCEL</string>
     <string name="criteria_notification_contains">Notification contains</string>
     <string name="start_typing">Start typing…</string>
+    <string name="action_pick">Pick action</string>
+    <string name="rule_do_nothing">do nothing</string>
 </resources>
