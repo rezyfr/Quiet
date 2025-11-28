@@ -4,11 +4,15 @@ import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.data.repository.NotificationRepository
-import id.rezyfr.quiet.domain.NotificationModel
+import id.rezyfr.quiet.domain.ExtraCriteria
+import id.rezyfr.quiet.domain.NotificationUiModel
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -45,9 +49,23 @@ class AddRuleScreenViewModel(
         navigator.navigate(QuietScreens.Action.route)
     }
 
+    fun addExtraCriteria(extraCriteria: ExtraCriteria) {
+        _state.update {
+            it.copy(
+                selectedExtraCriteria =
+                    it.selectedExtraCriteria.toMutableList().apply {
+                        if (contains(extraCriteria)) {
+                            remove(extraCriteria)
+                        } else {
+                            add(extraCriteria)
+                        }
+                    })
+        }
+    }
+
     fun getRecentNotification(pm: PackageManager, packageName: String?) {
         viewModelScope.launch {
-            repository.getNotification(packageName).collect { notifEntity ->
+            repository.getRecentNotifications(packageName).collect { notifEntity ->
                 _state.update {
                     it.copy(
                         notificationList =
@@ -61,13 +79,12 @@ class AddRuleScreenViewModel(
                                     }
 
                                 Pair(
-                                    NotificationModel(
+                                    NotificationUiModel(
                                         notif.sbnKey,
                                         notif.packageName,
                                         notif.title,
                                         notif.text,
-                                        notif.postTime,
-                                        notif.saved,
+                                        parsedToTime(notif.postTime),
                                     ),
                                     AppItem(
                                         label = info?.loadLabel(pm).toString(),
@@ -81,10 +98,29 @@ class AddRuleScreenViewModel(
         }
     }
 
+    private fun parsedToTime(time: Long): String {
+        return try {
+            val date = Date(time)
+
+            val timeFormatter = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val formattedTime = timeFormatter.format(date)
+
+            formattedTime
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    fun getExtraCriteria() {
+        _state.update { it.copy(extraCriteriaList = ExtraCriteria.DEFAULT) }
+    }
+
     data class AddRuleScreenState(
         val appItem: AppItem? = null,
         val criteriaText: List<String> = emptyList(),
         val action: ActionItem? = null,
-        val notificationList: List<Pair<NotificationModel, AppItem>> = emptyList(),
+        val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),
+        val extraCriteriaList: List<ExtraCriteria> = emptyList(),
+        val selectedExtraCriteria: List<ExtraCriteria> = emptyList(),
     )
 }

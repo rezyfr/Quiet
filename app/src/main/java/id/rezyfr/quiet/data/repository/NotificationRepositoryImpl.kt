@@ -21,7 +21,7 @@ class NotificationRepositoryImpl(val notificationDao: NotificationDao) : Notific
             ))
     }
 
-    override fun getNotification(packageName: String?): Flow<List<NotificationEntity>> {
-        return notificationDao.getNotifications(packageName)
+    override fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>> {
+        return notificationDao.getRecentNotifications(packageName)
     }
 }
