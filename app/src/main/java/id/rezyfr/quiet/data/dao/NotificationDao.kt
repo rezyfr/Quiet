@@ -19,9 +19,9 @@ interface NotificationDao {
         """
     SELECT * FROM notificationentity
     WHERE (:packageName IS NULL OR packageName = :packageName)
-    ORDER BY postTime DESC
+    ORDER BY postTime DESC LIMIT 10
 """)
-    fun getNotifications(packageName: String?): Flow<List<NotificationEntity>>
+    fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>>
 
     @Query(
         "DELETE FROM notificationentity where sbnKey NOT IN (SELECT sbnKey from notificationentity ORDER BY sbnKey DESC LIMIT 30)")

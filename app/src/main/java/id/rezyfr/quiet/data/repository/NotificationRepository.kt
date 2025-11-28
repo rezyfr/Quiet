@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface NotificationRepository {
     suspend fun saveNotification(notification: NotificationModel): Long
 
-    fun getNotification(packageName: String?): Flow<List<NotificationEntity>>
+    fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>>
 }
