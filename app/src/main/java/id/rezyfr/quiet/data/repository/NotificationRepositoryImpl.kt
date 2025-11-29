@@ -18,7 +18,8 @@ class NotificationRepositoryImpl(val notificationDao: NotificationDao) : Notific
                 text = notification.text,
                 postTime = notification.postTime,
                 saved = true,
-            ))
+            )
+        )
     }
 
     override fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>> {

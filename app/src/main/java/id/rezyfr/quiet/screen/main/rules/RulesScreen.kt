@@ -44,11 +44,11 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
             // Icon bubble
             Box(
                 modifier =
-                    Modifier.size(48.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
-                            shape = RoundedCornerShape(16.dp),
-                        ),
+                Modifier.size(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
+                        shape = RoundedCornerShape(16.dp),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -71,7 +71,7 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
 
             Text(
                 text =
-                    "Tap the + button to create a rule that will be triggered when you get a new notification or check out suggestions on the explore page.",
+                "Tap the + button to create a rule that will be triggered when you get a new notification or check out suggestions on the explore page.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -92,10 +92,10 @@ private fun RulesFooter(onCreateRuleClick: () -> Unit = {}) {
             onClick = onCreateRuleClick,
             shape = RoundedCornerShape(24.dp),
             colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) {
             Icon(
                 imageVector = Icons.Default.Add,

@@ -21,7 +21,9 @@ class QuietApp : Application() {
                     navigationModule,
                     repositoryModule,
                     persistenceModule,
-                    appModule))
+                    appModule
+                )
+            )
         }
     }
 }

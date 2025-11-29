@@ -49,17 +49,22 @@ class AddRuleScreenViewModel(
         navigator.navigate(QuietScreens.Action.route)
     }
 
+    fun navigateToPickTime() {
+        navigator.navigate(QuietScreens.PickTime.route)
+    }
+
     fun addExtraCriteria(extraCriteria: ExtraCriteria) {
         _state.update {
             it.copy(
                 selectedExtraCriteria =
-                    it.selectedExtraCriteria.toMutableList().apply {
-                        if (contains(extraCriteria)) {
-                            remove(extraCriteria)
-                        } else {
-                            add(extraCriteria)
-                        }
-                    })
+                it.selectedExtraCriteria.toMutableList().apply {
+                    if (contains(extraCriteria)) {
+                        remove(extraCriteria)
+                    } else {
+                        add(extraCriteria)
+                    }
+                }
+            )
         }
     }
 
@@ -69,30 +74,31 @@ class AddRuleScreenViewModel(
                 _state.update {
                     it.copy(
                         notificationList =
-                            notifEntity.map { notif ->
-                                val info =
-                                    try {
-                                        pm.getApplicationInfo(notif.packageName, 0)
-                                    } catch (e: PackageManager.NameNotFoundException) {
-                                        print(e)
-                                        null
-                                    }
+                        notifEntity.map { notif ->
+                            val info =
+                                try {
+                                    pm.getApplicationInfo(notif.packageName, 0)
+                                } catch (e: PackageManager.NameNotFoundException) {
+                                    print(e)
+                                    null
+                                }
 
-                                Pair(
-                                    NotificationUiModel(
-                                        notif.sbnKey,
-                                        notif.packageName,
-                                        notif.title,
-                                        notif.text,
-                                        parsedToTime(notif.postTime),
-                                    ),
-                                    AppItem(
-                                        label = info?.loadLabel(pm).toString(),
-                                        icon = info?.loadIcon(pm),
-                                        packageName = notif.packageName,
-                                    ),
-                                )
-                            })
+                            Pair(
+                                NotificationUiModel(
+                                    notif.sbnKey,
+                                    notif.packageName,
+                                    notif.title,
+                                    notif.text,
+                                    parsedToTime(notif.postTime),
+                                ),
+                                AppItem(
+                                    label = info?.loadLabel(pm).toString(),
+                                    icon = info?.loadIcon(pm),
+                                    packageName = notif.packageName,
+                                ),
+                            )
+                        }
+                    )
                 }
             }
         }

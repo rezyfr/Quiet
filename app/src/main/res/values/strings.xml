@@ -32,4 +32,7 @@
     <string name="start_typing">Start typing…</string>
     <string name="action_pick">Pick action</string>
     <string name="rule_do_nothing">do nothing</string>
+    <string name="timepick_selected_times">Pick selected times</string>
+    <string name="timepick_always_active">Pick always active</string>
+    <string name="timepick_helper">Tap on day\'s timeline to add or change a time when the rule will become active.</string>
 </resources>

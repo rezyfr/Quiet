@@ -4,6 +4,7 @@ import id.rezyfr.quiet.screen.action.ActionPickerScreenViewModel
 import id.rezyfr.quiet.screen.criteria.CriteriaViewModel
 import id.rezyfr.quiet.screen.main.rules.RulesScreenViewModel
 import id.rezyfr.quiet.screen.pickapp.PickAppViewModel
+import id.rezyfr.quiet.screen.picktime.PickTimeViewModel
 import id.rezyfr.quiet.screen.rule.AddRuleScreenViewModel
 import id.rezyfr.quiet.screen.welcome.WelcomeViewModel
 import org.koin.core.module.dsl.viewModel
@@ -16,4 +17,5 @@ val viewModelModule = module {
     viewModel { PickAppViewModel(get()) }
     viewModel { CriteriaViewModel(get()) }
     viewModel { ActionPickerScreenViewModel(get()) }
+    viewModel { PickTimeViewModel() }
 }

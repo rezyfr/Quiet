@@ -105,7 +105,8 @@ fun WelcomeScreen(modifier: Modifier = Modifier, viewModel: WelcomeViewModel = k
         onNotificationClick = {
             // request notification permission
             if (!state.notificationAllowed &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            ) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
                 viewModel.checkNotification()
@@ -139,7 +140,8 @@ fun WelcomeContent(
         Column(modifier = Modifier.fillMaxSize().padding(spacingXX)) {
             Text(
                 stringResource(R.string.welcome_header),
-                style = MaterialTheme.typography.headlineMedium)
+                style = MaterialTheme.typography.headlineMedium
+            )
 
             Spacer(Modifier.height(spacingX))
             Text(stringResource(R.string.welcome_body), style = MaterialTheme.typography.bodyLarge)
@@ -198,7 +200,7 @@ fun RequiredAccessCard(
         shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth().clickable(true, onClick = onClick),
         colors =
-            CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor),
+        CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(spacingXH),
@@ -209,10 +211,10 @@ fun RequiredAccessCard(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier =
-                    Modifier.size(20.dp)
-                        .background(Color.Transparent, CircleShape)
-                        .border(BorderStroke(1.5.dp, LocalContentColor.current), CircleShape)
-                        .wrapContentSize(align = Alignment.Center),
+                Modifier.size(20.dp)
+                    .background(Color.Transparent, CircleShape)
+                    .border(BorderStroke(1.5.dp, LocalContentColor.current), CircleShape)
+                    .wrapContentSize(align = Alignment.Center),
             )
             Spacer(Modifier.width(spacingX))
             Column {

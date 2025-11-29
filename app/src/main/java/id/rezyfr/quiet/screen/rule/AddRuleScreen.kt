@@ -53,6 +53,7 @@ import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.component.WavyText
 import id.rezyfr.quiet.domain.ExtraCriteria
+import id.rezyfr.quiet.domain.ExtraCriteriaType
 import id.rezyfr.quiet.domain.NotificationUiModel
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
@@ -118,8 +119,13 @@ fun AddRuleScreen(
         onAppClick = { viewModel.navigateToPickApp() },
         onCriteriaClick = { viewModel.navigateToPickCriteria() },
         onActionClick = { viewModel.navigateToPickAction() },
-        onExtraCriteriaClick = {
-            // handled each criteria by id
+        onExtraCriteriaClick = { id ->
+            when (id) {
+                ExtraCriteriaType.TIME -> {
+                    viewModel.navigateToPickTime()
+                }
+                ExtraCriteriaType.CALL_STATUS -> TODO()
+            }
         },
         onAddExtraCriteriaClick = { showExtraSheet = true },
         state = state,
@@ -132,7 +138,8 @@ fun AddRuleScreen(
                 showExtraSheet = false
                 viewModel.addExtraCriteria(criteria)
             },
-            onDismiss = { showExtraSheet = false })
+            onDismiss = { showExtraSheet = false }
+        )
     }
 }
 
@@ -145,7 +152,7 @@ fun AddRuleContent(
     onActionClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
-    onExtraCriteriaClick: (String) -> Unit = {},
+    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
 ) {
     Surface(modifier.background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -197,7 +204,7 @@ fun AddRuleContent(
 @Composable
 private fun ExtraCriteriaText(
     extraCriteriaText: List<ExtraCriteria>,
-    onExtraCriteriaClick: (String) -> Unit = {},
+    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {}
 ) {
     if (extraCriteriaText.isEmpty()) return
@@ -207,7 +214,7 @@ private fun ExtraCriteriaText(
         }
         Row {
             Text(" ")
-            WavyText("${criteria.description}", onClick = { onExtraCriteriaClick(criteria.label) })
+            WavyText("${criteria.description}", onClick = { onExtraCriteriaClick(criteria.id) })
             if (index == extraCriteriaText.lastIndex) {
                 AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
             }
@@ -224,7 +231,7 @@ fun RuleEditorHeader(
     onCriteriaClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
-    onExtraCriteriaClick: (String) -> Unit = {}
+    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {}
 ) {
     val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
     val containsText =
@@ -232,33 +239,36 @@ fun RuleEditorHeader(
             stringResource(R.string.rule_contains_anything)
         } else {
             "contains ${
-            state.criteriaText.fastJoinToString(" or ") {
-                "\"${it.capitalize()}\""
-            }
-        }"
+                state.criteriaText.fastJoinToString(" or ") {
+                    "\"${it.capitalize()}\""
+                }
+            }"
         }
 
     FlowRow(
         modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(spacing)) {
-            CompositionLocalProvider(
-                LocalTextStyle provides
-                    MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )) {
-                    Text(
-                        stringResource(R.string.rule_when_notification),
-                        Modifier.padding(bottom = spacingX))
-                    RuleApps(state, state.appItem?.icon, appText, onAppClick)
-                    RuleCriteria(containsText, onCriteriaClick)
-                    if (state.selectedExtraCriteria.isEmpty()) {
-                        AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
-                    }
-                    RuleExtraCriteria(state.selectedExtraCriteria, onExtraCriteriaClick)
-                    RuleActions(state, onActionClick)
-                }
+        verticalArrangement = Arrangement.spacedBy(spacing)
+    ) {
+        CompositionLocalProvider(
+            LocalTextStyle provides
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+        ) {
+            Text(
+                stringResource(R.string.rule_when_notification),
+                Modifier.padding(bottom = spacingX)
+            )
+            RuleApps(state, state.appItem?.icon, appText, onAppClick)
+            RuleCriteria(containsText, onCriteriaClick)
+            if (state.selectedExtraCriteria.isEmpty()) {
+                AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
+            }
+            RuleExtraCriteria(state.selectedExtraCriteria, onExtraCriteriaClick)
+            RuleActions(state, onActionClick)
         }
+    }
 }
 
 @Composable
@@ -266,16 +276,19 @@ private fun AddExtraCriteria(onAddExtraCriteriaClick: () -> Unit) {
     Spacer(Modifier.width(spacing))
     Box(
         Modifier.background(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(8.dp))
-            .clickable(onClick = onAddExtraCriteriaClick)) {
-            Text(
-                text = "+",
-                modifier =
-                    Modifier.padding(horizontal = 8.dp, vertical = spacingSmall)
-                        .align(Alignment.Center),
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(8.dp)
+        )
+            .clickable(onClick = onAddExtraCriteriaClick)
+    ) {
+        Text(
+            text = "+",
+            modifier =
+            Modifier.padding(horizontal = 8.dp, vertical = spacingSmall)
+                .align(Alignment.Center),
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
 }
 
 @Composable
@@ -288,14 +301,15 @@ private fun RuleCriteria(containsText: String, onCriteriaClick: () -> Unit) {
 @Composable
 private fun RuleExtraCriteria(
     extraCriteria: List<ExtraCriteria>,
-    onExtraCriteriaClick: (String) -> Unit = {},
+    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {}
 ) {
     FlowRow(verticalArrangement = Arrangement.Top) {
         ExtraCriteriaText(
             extraCriteriaText = extraCriteria,
             onExtraCriteriaClick = onExtraCriteriaClick,
-            onAddExtraCriteriaClick = onAddExtraCriteriaClick)
+            onAddExtraCriteriaClick = onAddExtraCriteriaClick
+        )
     }
 }
 
@@ -386,9 +400,10 @@ fun RecentMatchingNotificationsSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier =
-                Modifier.fillMaxWidth()
-                    .height(1.5.dp)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)))
+            Modifier.fillMaxWidth()
+                .height(1.5.dp)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        )
 
         Spacer(Modifier.height(spacingXX))
 
@@ -435,8 +450,9 @@ fun RecentNotificationCard(
                     Text(
                         text = item.second.label,
                         style =
-                            MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.SemiBold),
+                        MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
 
@@ -462,7 +478,7 @@ fun RecentNotificationCard(
                 Text(
                     text = item.first.text,
                     style =
-                        MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -484,9 +500,10 @@ fun ExtraCriteriaBottomSheet(
     ) {
         ExtraCriteriaBottomSheetContent(
             modifier =
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
+            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
             items = items,
-            onItemClick = onItemClick)
+            onItemClick = onItemClick
+        )
     }
 }
 
@@ -497,12 +514,13 @@ fun ExtraCriteriaBottomSheetContent(
     onItemClick: (ExtraCriteria) -> Unit = {}
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth().padding(horizontal = spacingXX, vertical = spacingXX)) {
-            items(items) { item ->
-                ExtraCriteriaItem(criteria = item, onClick = { onItemClick(item) })
-                Spacer(Modifier.height(spacingX))
-            }
+        modifier = modifier.fillMaxWidth().padding(horizontal = spacingXX, vertical = spacingXX)
+    ) {
+        items(items) { item ->
+            ExtraCriteriaItem(criteria = item, onClick = { onItemClick(item) })
+            Spacer(Modifier.height(spacingX))
         }
+    }
 }
 
 @Composable
@@ -510,13 +528,15 @@ fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: ExtraCriteria, on
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
-            Text(
-                text = "filter by ${criteria.label}",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = spacingX, vertical = spacing))
-        }
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
+    ) {
+        Text(
+            text = "filter by ${criteria.label}",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = spacingX, vertical = spacing)
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -542,19 +562,20 @@ private fun AddRuleFilledPreview() {
     QuietTheme {
         AddRuleContent(
             state =
-                AddRuleScreenViewModel.AddRuleScreenState(
-                    appItem =
-                        AppItem(
-                            label = "Microsoft Teams",
-                            packageName = "com.microsoft.teams",
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    context, R.drawable.ic_launcher_foreground)!!,
-                        ),
-                    criteriaText = listOf("meeting", "call"),
-                    selectedExtraCriteria = ExtraCriteria.DEFAULT,
-                    action = null,
+            AddRuleScreenViewModel.AddRuleScreenState(
+                appItem =
+                AppItem(
+                    label = "Microsoft Teams",
+                    packageName = "com.microsoft.teams",
+                    icon =
+                    AppCompatResources.getDrawable(
+                        context, R.drawable.ic_launcher_foreground
+                    )!!,
                 ),
+                criteriaText = listOf("meeting", "call"),
+                selectedExtraCriteria = ExtraCriteria.DEFAULT,
+                action = null,
+            ),
         )
     }
 }
@@ -566,37 +587,40 @@ private fun AddRuleFilledWithRecentPreview() {
     QuietTheme {
         AddRuleContent(
             state =
-                AddRuleScreenViewModel.AddRuleScreenState(
-                    appItem =
-                        AppItem(
-                            label = "Microsoft Teams",
-                            packageName = "com.microsoft.teams",
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    context, R.drawable.ic_launcher_foreground)!!,
-                        ),
-                    criteriaText = listOf("meeting", "call"),
-                    action = null,
-                    notificationList =
-                        listOf(
-                            Pair(
-                                NotificationUiModel(
-                                    sbnKey = "sbnKey",
-                                    packageName = "com.btpn.dc",
-                                    title = "Streaming Makin Hemat",
-                                    text =
-                                        "Karena ada cashback 50% untuk bayar layanan steaming favorit pakai Kartu Kredit Jenius. Khusus buat kamu, Cek di sini\uD83D\uDC47\uD83C\uDFFD\n",
-                                    postTime = "07:00 AM",
-                                ),
-                                AppItem(
-                                    label = "Jenius",
-                                    packageName = "com.btpn.dc",
-                                    icon =
-                                        AppCompatResources.getDrawable(
-                                            context, R.drawable.ic_launcher_foreground)!!,
-                                ),
-                            )),
+            AddRuleScreenViewModel.AddRuleScreenState(
+                appItem =
+                AppItem(
+                    label = "Microsoft Teams",
+                    packageName = "com.microsoft.teams",
+                    icon =
+                    AppCompatResources.getDrawable(
+                        context, R.drawable.ic_launcher_foreground
+                    )!!,
                 ),
+                criteriaText = listOf("meeting", "call"),
+                action = null,
+                notificationList =
+                listOf(
+                    Pair(
+                        NotificationUiModel(
+                            sbnKey = "sbnKey",
+                            packageName = "com.btpn.dc",
+                            title = "Streaming Makin Hemat",
+                            text =
+                            "Karena ada cashback 50% untuk bayar layanan steaming favorit pakai Kartu Kredit Jenius. Khusus buat kamu, Cek di sini\uD83D\uDC47\uD83C\uDFFD\n",
+                            postTime = "07:00 AM",
+                        ),
+                        AppItem(
+                            label = "Jenius",
+                            packageName = "com.btpn.dc",
+                            icon =
+                            AppCompatResources.getDrawable(
+                                context, R.drawable.ic_launcher_foreground
+                            )!!,
+                        ),
+                    )
+                ),
+            ),
         )
     }
 }

@@ -28,13 +28,13 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
                     isLoading = false,
                     allApps = apps,
                     filteredApps =
-                        if (_pendingQuery.isNotEmpty()) {
-                            apps.filter { apps ->
-                                apps.label.contains(_pendingQuery, ignoreCase = true)
-                            }
-                        } else {
-                            apps
-                        },
+                    if (_pendingQuery.isNotEmpty()) {
+                        apps.filter { apps ->
+                            apps.label.contains(_pendingQuery, ignoreCase = true)
+                        }
+                    } else {
+                        apps
+                    },
                 )
             }
             _pendingQuery = ""
@@ -50,11 +50,11 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
             it.copy(
                 searchQuery = query,
                 filteredApps =
-                    if (query.isNotEmpty()) {
-                        it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
-                    } else {
-                        it.allApps
-                    },
+                if (query.isNotEmpty()) {
+                    it.allApps.filter { apps -> apps.label.contains(query, ignoreCase = true) }
+                } else {
+                    it.allApps
+                },
             )
         }
     }
