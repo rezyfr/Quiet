@@ -89,52 +89,54 @@ fun PickAppContent(
 ) {
     Column(
         modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(spacingXX)) {
-            // TITLE BLOCK
-            CompositionLocalProvider(
-                LocalTextStyle provides
-                    MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )) {
-                    Row(verticalAlignment = Alignment.Top) {
-                        Text(stringResource(R.string.when_notification))
-                        Spacer(Modifier.width(spacingSmall))
-                        WavyText(text = stringResource(R.string.pick_is_from))
-                    }
-                }
-
-            Spacer(Modifier.height(spacingX))
-            // SEARCH BAR
-            SearchBar(onValueChange = onQueryChange)
-
-            Spacer(Modifier.height(spacingXH))
-
-            if (isLoading) {
-                // ===== Loading State =====
-                LoadingContent(Modifier.fillMaxWidth().weight(1f))
-
-                return@Column
-            }
-            // ===== After Loading =====
-            // SELECTED APP SECTION (optional)
-            if (selectedApp != null) {
-                SelectedAppSection(selectedApp)
-            }
-            // APPS GRID
-            PickAppsGrid(allApps, selectedApp, onSelectApp, Modifier.weight(1f))
-
-            Spacer(Modifier.height(spacingXH))
-            // BOTTOM BUTTON
-            if (selectedApp == null) {
-                PickButton(label = "Pick all apps", onClick = onPickAllApps)
-            } else {
-                PickButton(label = "Pick ${selectedApp.label}", onClick = onConfirmSelection)
+        modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(spacingXX)
+    ) {
+        // TITLE BLOCK
+        CompositionLocalProvider(
+            LocalTextStyle provides
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+        ) {
+            Row(verticalAlignment = Alignment.Top) {
+                Text(stringResource(R.string.when_notification))
+                Spacer(Modifier.width(spacingSmall))
+                WavyText(text = stringResource(R.string.pick_is_from))
             }
         }
+
+        Spacer(Modifier.height(spacingX))
+        // SEARCH BAR
+        SearchBar(onValueChange = onQueryChange)
+
+        Spacer(Modifier.height(spacingXH))
+
+        if (isLoading) {
+            // ===== Loading State =====
+            LoadingContent(Modifier.fillMaxWidth().weight(1f))
+
+            return@Column
+        }
+        // ===== After Loading =====
+        // SELECTED APP SECTION (optional)
+        if (selectedApp != null) {
+            SelectedAppSection(selectedApp)
+        }
+        // APPS GRID
+        PickAppsGrid(allApps, selectedApp, onSelectApp, Modifier.weight(1f))
+
+        Spacer(Modifier.height(spacingXH))
+        // BOTTOM BUTTON
+        if (selectedApp == null) {
+            PickButton(label = "Pick all apps", onClick = onPickAllApps)
+        } else {
+            PickButton(label = "Pick ${selectedApp.label}", onClick = onConfirmSelection)
+        }
+    }
 }
 
 @Composable
@@ -275,15 +277,15 @@ fun SearchBar(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {
         singleLine = true,
         shape = RoundedCornerShape(18.dp),
         colors =
-            TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
+        TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
         modifier = modifier.fillMaxWidth().height(56.dp),
     )
 }
@@ -297,20 +299,23 @@ private fun PreviewPickAppInitContent() {
     QuietTheme {
         PickAppContent(
             allApps =
-                listOf(
-                    AppItem(
-                        "App 1",
-                        AppCompatResources.getDrawable(
-                            context, R.drawable.ic_launcher_foreground)!!,
-                        "com.example.app1",
-                    ),
-                    AppItem(
-                        "App 2",
-                        AppCompatResources.getDrawable(
-                            context, R.drawable.ic_launcher_foreground)!!,
-                        "com.example.app1",
-                    ),
-                ))
+            listOf(
+                AppItem(
+                    "App 1",
+                    AppCompatResources.getDrawable(
+                        context, R.drawable.ic_launcher_foreground
+                    )!!,
+                    "com.example.app1",
+                ),
+                AppItem(
+                    "App 2",
+                    AppCompatResources.getDrawable(
+                        context, R.drawable.ic_launcher_foreground
+                    )!!,
+                    "com.example.app1",
+                ),
+            )
+        )
     }
 }
 
@@ -328,15 +333,16 @@ private fun PreviewPickAppSelectedContent() {
         PickAppContent(
             selectedApp = selected,
             allApps =
-                listOf(
-                    selected,
-                    AppItem(
-                        "App 2",
-                        AppCompatResources.getDrawable(
-                            context, R.drawable.ic_launcher_foreground)!!,
-                        "com.example.app1",
-                    ),
+            listOf(
+                selected,
+                AppItem(
+                    "App 2",
+                    AppCompatResources.getDrawable(
+                        context, R.drawable.ic_launcher_foreground
+                    )!!,
+                    "com.example.app1",
                 ),
+            ),
         )
     }
 }

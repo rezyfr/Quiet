@@ -59,10 +59,10 @@ fun WavyLine(modifier: Modifier = Modifier, color: Color = Color.Black) {
             initialValue = -1f,
             targetValue = 0f,
             animationSpec =
-                infiniteRepeatable(
-                    animation = tween(1000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart,
-                ),
+            infiniteRepeatable(
+                animation = tween(1000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
         )
 
     val showPoints by remember { mutableStateOf(false) }

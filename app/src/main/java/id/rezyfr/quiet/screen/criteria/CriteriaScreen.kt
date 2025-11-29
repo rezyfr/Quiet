@@ -99,16 +99,17 @@ fun CriteriaContent(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = spacingX),
             ) {
                 PhraseListSection(
-                    phrases = state.phrase, onRemove = { phrase -> onRemovePhrase(phrase) })
+                    phrases = state.phrase, onRemove = { phrase -> onRemovePhrase(phrase) }
+                )
                 Spacer(Modifier.height(spacingXXX))
                 CriteriaGridItem(
                     modifier = Modifier.fillMaxWidth(0.3f),
                     criteria =
-                        CriteriaItem(
-                            name = stringResource(R.string.criteria_phrase_title),
-                            icon = R.drawable.ic_double_quotes,
-                            desc = stringResource(R.string.criteria_phrase_desc),
-                        ),
+                    CriteriaItem(
+                        name = stringResource(R.string.criteria_phrase_title),
+                        icon = R.drawable.ic_double_quotes,
+                        desc = stringResource(R.string.criteria_phrase_desc),
+                    ),
                     isCriteriaEmpty = state.phrase.isEmpty(),
                     onClick = onPhraseClick,
                 )
@@ -143,13 +144,14 @@ private fun CriteriaTopBar() {
             MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
-            )) {
-            Column(Modifier.padding(spacingXX)) {
-                Text(stringResource(R.string.when_notification))
-                Spacer(Modifier.height(spacing))
-                WavyText(text = stringResource(R.string.criteria_contains_any_of))
-            }
+            )
+    ) {
+        Column(Modifier.padding(spacingXX)) {
+            Text(stringResource(R.string.when_notification))
+            Spacer(Modifier.height(spacing))
+            WavyText(text = stringResource(R.string.criteria_contains_any_of))
         }
+    }
 }
 
 @Composable
@@ -239,13 +241,13 @@ fun PhraseDialogContent(
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors =
-                    TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
+                TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -262,7 +264,7 @@ fun PhraseDialogContent(
             Text(
                 text = stringResource(R.string.cancel),
                 modifier =
-                    Modifier.align(Alignment.CenterHorizontally).clickable(onClick = onDismiss),
+                Modifier.align(Alignment.CenterHorizontally).clickable(onClick = onDismiss),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
             )
@@ -308,7 +310,7 @@ fun PhraseCard(
                 Text(
                     text = text,
                     style =
-                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 )
 
                 Icon(
@@ -323,14 +325,15 @@ fun PhraseCard(
         if (showOr) {
             Box(
                 Modifier.align(Alignment.TopCenter)
-                    .background(MaterialTheme.colorScheme.background)) {
-                    Text(
-                        "or",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = spacing),
-                    )
-                }
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                Text(
+                    "or",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = spacing),
+                )
+            }
         }
     }
 }
@@ -348,7 +351,8 @@ private fun PreviewCriteriaEmptyContent() {
 private fun PreviewCriteriaFilledContent() {
     QuietTheme {
         CriteriaContent(
-            state = CriteriaViewModel.State(listOf("Example", "Example 2", "Example 3")))
+            state = CriteriaViewModel.State(listOf("Example", "Example 2", "Example 3"))
+        )
     }
 }
 
@@ -358,9 +362,9 @@ private fun PreviewPhraseDialog() {
     QuietTheme {
         Box(
             modifier =
-                Modifier.fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(20.dp),
+            Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(20.dp),
             contentAlignment = Alignment.Center,
         ) {
             PhraseDialogContent()

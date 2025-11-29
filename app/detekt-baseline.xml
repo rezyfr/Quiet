@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>Indentation:ActionPickerScreen.kt$ </ID>
+    <ID>Indentation:ActionPickerScreenViewModel.kt$ActionPickerScreenViewModel$ </ID>
+    <ID>Indentation:ActionPickerScreenViewModel.kt$ActionPickerScreenViewModel.State$ </ID>
+    <ID>Indentation:AddRuleScreen.kt$ </ID>
+    <ID>Indentation:AddRuleScreenViewModel.kt$AddRuleScreenViewModel$ </ID>
+    <ID>Indentation:CriteriaScreen.kt$ </ID>
+    <ID>Indentation:MainScreen.kt$ </ID>
+    <ID>Indentation:PickAppScreen.kt$ </ID>
+    <ID>Indentation:PickAppViewModel.kt$PickAppViewModel$ </ID>
+    <ID>Indentation:PickTimeScreen.kt$ </ID>
+    <ID>Indentation:QuietButtons.kt$ </ID>
+    <ID>Indentation:RulesScreen.kt$ </ID>
+    <ID>Indentation:Theme.kt$ </ID>
+    <ID>Indentation:WavyText.kt$ </ID>
+    <ID>Indentation:WelcomeScreen.kt$ </ID>
+    <ID>LongMethod:AddRuleScreen.kt$@Composable fun AddRuleScreen( navController: NavController, viewModel: AddRuleScreenViewModel = koinViewModel(), )</ID>
+    <ID>LongParameterList:ActionPickerScreen.kt$( modifier: Modifier = Modifier, categories: List&lt;ActionCategory&gt; = listOf(), expandedState: Map&lt;String, Boolean&gt; = mapOf(), selectedActionId: String? = null, onToggleCategory: (String) -&gt; Unit = {}, onSelectAction: (ActionItem) -&gt; Unit = {}, onPickAction: () -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:AddRuleScreen.kt$( state: AddRuleScreenViewModel.AddRuleScreenState, modifier: Modifier = Modifier, onAppClick: () -&gt; Unit = {}, onCriteriaClick: () -&gt; Unit = {}, onActionClick: () -&gt; Unit = {}, onAddExtraCriteriaClick: () -&gt; Unit = {}, onExtraCriteriaClick: (ExtraCriteriaType) -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:AddRuleScreen.kt$( state: AddRuleScreenViewModel.AddRuleScreenState, modifier: Modifier = Modifier, onAppClick: () -&gt; Unit = {}, onSaveClick: () -&gt; Unit = {}, onActionClick: () -&gt; Unit = {}, onCriteriaClick: () -&gt; Unit = {}, onAddExtraCriteriaClick: () -&gt; Unit = {}, onExtraCriteriaClick: (ExtraCriteriaType) -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:PickAppScreen.kt$( modifier: Modifier = Modifier, onQueryChange: (String) -&gt; Unit = {}, allApps: List&lt;AppItem&gt; = listOf(), isLoading: Boolean = false, selectedApp: AppItem? = null, onSelectApp: (AppItem) -&gt; Unit = {}, onPickAllApps: () -&gt; Unit = {}, onConfirmSelection: () -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:WelcomeScreen.kt$( @StringRes title: Int, @StringRes body: Int, modifier: Modifier = Modifier, index: Int = 1, allowed: Boolean = false, onClick: () -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:WelcomeScreen.kt$( state: WelcomeViewModel.UiState, context: Context, onNotificationClick: () -&gt; Unit, onBackgroundClick: () -&gt; Unit, onEnableClick: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
+    <ID>MultiLineIfElse:PickTimeScreen.kt$stringResource(R.string.timepick_always_active)</ID>
+    <ID>MultiLineIfElse:PickTimeScreen.kt$stringResource(R.string.timepick_selected_times)</ID>
+    <ID>NoWildcardImports:ExampleUnitTest.kt$import org.junit.Assert.*</ID>
+    <ID>TooManyFunctions:AddRuleScreen.kt$id.rezyfr.quiet.screen.rule.AddRuleScreen.kt</ID>
+    <ID>TooManyFunctions:AddRuleScreenViewModel.kt$AddRuleScreenViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:CriteriaScreen.kt$id.rezyfr.quiet.screen.criteria.CriteriaScreen.kt</ID>
+    <ID>UnusedParameter:PickTimeScreen.kt$endTime: String = "17:00"</ID>
+    <ID>UnusedParameter:PickTimeScreen.kt$startTime: String = "07:00"</ID>
+    <ID>UnusedParameter:WelcomeScreen.kt$modifier: Modifier = Modifier</ID>
+    <ID>Wrapping:ActionPickerScreen.kt$(</ID>
+    <ID>Wrapping:ActionPickerScreenViewModel.kt$ActionPickerScreenViewModel$(</ID>
+    <ID>Wrapping:ActionPickerScreenViewModel.kt$ActionPickerScreenViewModel.State$(</ID>
+    <ID>Wrapping:AddRuleScreen.kt$(</ID>
+    <ID>Wrapping:AddRuleScreenViewModel.kt$AddRuleScreenViewModel$(</ID>
+    <ID>Wrapping:CriteriaScreen.kt$(</ID>
+    <ID>Wrapping:ExtraCriteria.kt$ExtraCriteria.Companion$(</ID>
+    <ID>Wrapping:NotificationDao.kt$NotificationDao$(</ID>
+    <ID>Wrapping:NotificationRepositoryImpl.kt$NotificationRepositoryImpl$(</ID>
+    <ID>Wrapping:PickAppScreen.kt$(</ID>
+    <ID>Wrapping:PickTimeScreen.kt$(</ID>
+    <ID>Wrapping:PickTimeViewModel.kt$PickTimeViewModel.PickTimeState$(</ID>
+    <ID>Wrapping:QuietApp.kt$QuietApp$(</ID>
+    <ID>Wrapping:QuietNavHost.kt$(</ID>
+    <ID>Wrapping:WelcomeScreen.kt$(</ID>
+  </CurrentIssues>
+</SmellBaseline>

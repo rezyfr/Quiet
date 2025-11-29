@@ -27,10 +27,10 @@ fun PrimaryButton(
         onClick = onClick,
         enabled = enabled,
         colors =
-            ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
         contentPadding = PaddingValues(horizontal = spacingXX, vertical = spacingX),
         shape = RoundedCornerShape(16.dp),
     ) {

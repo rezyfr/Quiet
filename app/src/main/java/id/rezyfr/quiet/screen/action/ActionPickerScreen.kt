@@ -73,48 +73,49 @@ fun ActionPickerContent(
 ) {
     Column(
         modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = spacingXX)) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(vertical = spacingXX),
-            ) {
-                categories.forEach { category ->
-                    item {
-                        CategoryHeader(
-                            name = category.name,
-                            expanded = expandedState[category.name] == true,
-                            onToggle = { onToggleCategory(category.name) },
-                        )
-                    }
-
-                    item { Spacer(Modifier.height(spacingXX)) }
-                    if (expandedState[category.name] == true) {
-                        items(category.items) { action ->
-                            ActionCard(
-                                item = action,
-                                selected = selectedActionId == action.id,
-                                onClick = { onSelectAction(action) },
-                            )
-                            Spacer(Modifier.height(spacingX))
-                        }
-                    }
-
-                    item { Spacer(Modifier.height(spacingXX)) }
+        modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = spacingXX)
+    ) {
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(vertical = spacingXX),
+        ) {
+            categories.forEach { category ->
+                item {
+                    CategoryHeader(
+                        name = category.name,
+                        expanded = expandedState[category.name] == true,
+                        onToggle = { onToggleCategory(category.name) },
+                    )
                 }
+
+                item { Spacer(Modifier.height(spacingXX)) }
+                if (expandedState[category.name] == true) {
+                    items(category.items) { action ->
+                        ActionCard(
+                            item = action,
+                            selected = selectedActionId == action.id,
+                            onClick = { onSelectAction(action) },
+                        )
+                        Spacer(Modifier.height(spacingX))
+                    }
+                }
+
+                item { Spacer(Modifier.height(spacingXX)) }
             }
-
-            PrimaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.action_pick),
-                enabled = selectedActionId != null,
-                onClick = onPickAction,
-            )
-
-            Spacer(Modifier.height(spacingXX))
         }
+
+        PrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.action_pick),
+            enabled = selectedActionId != null,
+            onClick = onPickAction,
+        )
+
+        Spacer(Modifier.height(spacingXX))
+    }
 }
 
 @Composable
@@ -126,7 +127,7 @@ fun CategoryHeader(
 ) {
     Row(
         modifier =
-            modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = spacing),
+        modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = spacing),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -138,11 +139,11 @@ fun CategoryHeader(
         Spacer(Modifier.width(spacing))
         Icon(
             imageVector =
-                if (expanded) {
-                    Icons.Default.KeyboardArrowUp
-                } else {
-                    Icons.Default.KeyboardArrowDown
-                },
+            if (expanded) {
+                Icons.Default.KeyboardArrowUp
+            } else {
+                Icons.Default.KeyboardArrowDown
+            },
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(32.dp),
@@ -180,9 +181,9 @@ fun ActionCard(
             // Icon
             Box(
                 modifier =
-                    Modifier.size(48.dp)
-                        .background(IconBlueBackground, RoundedCornerShape(12.dp))
-                        .padding(spacing),
+                Modifier.size(48.dp)
+                    .background(IconBlueBackground, RoundedCornerShape(12.dp))
+                    .padding(spacing),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -222,44 +223,44 @@ private fun PreviewActionPicker() {
             expandedState = mapOf("Category 1" to true, "Category 2" to true),
             selectedActionId = "delete",
             categories =
-                listOf(
-                    ActionCategory(
-                        name = "Category 1",
-                        items =
-                            listOf(
-                                ActionItem(
-                                    id = "mute",
-                                    title = "Action 1",
-                                    description = "Description 1",
-                                    icon = R.drawable.ic_launcher_foreground,
-                                ),
-                                ActionItem(
-                                    id = "unmute",
-                                    title = "Action 2",
-                                    description = "Description 2",
-                                    icon = R.drawable.ic_launcher_foreground,
-                                ),
-                            ),
-                    ),
-                    ActionCategory(
-                        name = "Category 2",
-                        items =
-                            listOf(
-                                ActionItem(
-                                    id = "delete",
-                                    title = "Action 3",
-                                    description = "Description 3",
-                                    icon = R.drawable.ic_launcher_foreground,
-                                ),
-                                ActionItem(
-                                    id = "add",
-                                    title = "Action 4",
-                                    description = "Description 4",
-                                    icon = R.drawable.ic_launcher_foreground,
-                                ),
-                            ),
+            listOf(
+                ActionCategory(
+                    name = "Category 1",
+                    items =
+                    listOf(
+                        ActionItem(
+                            id = "mute",
+                            title = "Action 1",
+                            description = "Description 1",
+                            icon = R.drawable.ic_launcher_foreground,
+                        ),
+                        ActionItem(
+                            id = "unmute",
+                            title = "Action 2",
+                            description = "Description 2",
+                            icon = R.drawable.ic_launcher_foreground,
+                        ),
                     ),
                 ),
+                ActionCategory(
+                    name = "Category 2",
+                    items =
+                    listOf(
+                        ActionItem(
+                            id = "delete",
+                            title = "Action 3",
+                            description = "Description 3",
+                            icon = R.drawable.ic_launcher_foreground,
+                        ),
+                        ActionItem(
+                            id = "add",
+                            title = "Action 4",
+                            description = "Description 4",
+                            icon = R.drawable.ic_launcher_foreground,
+                        ),
+                    ),
+                ),
+            ),
         )
     }
 }

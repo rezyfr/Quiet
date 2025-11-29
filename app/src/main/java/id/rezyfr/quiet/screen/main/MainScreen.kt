@@ -44,11 +44,11 @@ fun MainBottomNav(
                 icon = { Icon(imageVector = dest.icon, contentDescription = null) },
                 label = { Text(dest.route.capitalize(Locale.ROOT)) },
                 colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primary,
-                    ),
+                NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                ),
             )
         }
     }

@@ -23,6 +23,8 @@ sealed class QuietScreens(
 
     data object Action : QuietScreens("actions")
 
+    data object PickTime : QuietScreens("pick_time")
+
     // example screen
     data object Example :
         QuietScreens(

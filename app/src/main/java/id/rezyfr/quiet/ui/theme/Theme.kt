@@ -53,11 +53,11 @@ val QuietShapes =
 val QuietTypography =
     Typography(
         headlineMedium =
-            androidx.compose.ui.text.TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold),
+        androidx.compose.ui.text.TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold),
         bodyLarge =
-            androidx.compose.ui.text.TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal),
+        androidx.compose.ui.text.TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal),
         bodyMedium =
-            androidx.compose.ui.text.TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal),
+        androidx.compose.ui.text.TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal),
     )
 
 @Composable

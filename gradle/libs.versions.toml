@@ -16,7 +16,6 @@ koin = "4.1.1"
 accompanist = "0.37.3"
 kotlinx = "1.6.0"
 detekt = "1.23.7"
-spotless = "8.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -58,6 +57,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-parcelize = { id = "kotlin-parcelize" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 detekt-plugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
 

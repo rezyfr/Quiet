@@ -24,9 +24,10 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
         _state.update {
             it.copy(
                 expandedCategory =
-                    it.expandedCategory.toMutableMap().apply {
-                        put(categoryName, !getOrDefault(categoryName, false))
-                    })
+                it.expandedCategory.toMutableMap().apply {
+                    put(categoryName, !getOrDefault(categoryName, false))
+                }
+            )
         }
     }
 
@@ -46,50 +47,53 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
             mapOf(
                 "Silence actions" to true,
                 "Dismiss actions" to true,
-                "Automation actions" to false),
+                "Automation actions" to false
+            ),
         val actions: List<ActionCategory> =
             listOf(
                 ActionCategory(
                     name = "Silence actions",
                     items =
-                        listOf(
-                            ActionItem(
-                                id = "cooldown",
-                                title = "Cooldown",
-                                icon = R.drawable.ic_action_freeze,
-                                description =
-                                    "Prevent the same app or conversation from buzzing you multiple times in quick succession by muting or dismissing them automatically.",
-                            ),
-                            ActionItem(
-                                title = "Mute",
-                                icon = R.drawable.ic_action_mute,
-                                description =
-                                    "Prevent the notification that matches your criteria from buzzing or playing a sound.",
-                                id = "mute",
-                            ),
+                    listOf(
+                        ActionItem(
+                            id = "cooldown",
+                            title = "Cooldown",
+                            icon = R.drawable.ic_action_freeze,
+                            description =
+                            "Prevent the same app or conversation from buzzing you multiple times in quick succession by muting or dismissing them automatically.",
                         ),
+                        ActionItem(
+                            title = "Mute",
+                            icon = R.drawable.ic_action_mute,
+                            description =
+                            "Prevent the notification that matches your criteria from buzzing or playing a sound.",
+                            id = "mute",
+                        ),
+                    ),
                 ),
                 ActionCategory(
                     name = "Dismiss actions",
                     items =
-                        listOf(
-                            ActionItem(
-                                id = "dismiss",
-                                title = "Dismiss",
-                                icon = R.drawable.ic_action_dismiss,
-                                description = "Automatically dismiss the notification",
-                            )),
+                    listOf(
+                        ActionItem(
+                            id = "dismiss",
+                            title = "Dismiss",
+                            icon = R.drawable.ic_action_dismiss,
+                            description = "Automatically dismiss the notification",
+                        )
+                    ),
                 ),
                 ActionCategory(
                     name = "Automation actions",
                     items =
-                        listOf(
-                            ActionItem(
-                                id = "open",
-                                title = "Open notification",
-                                icon = R.drawable.ic_action_open,
-                                description = "Automatically tap the notification",
-                            )),
+                    listOf(
+                        ActionItem(
+                            id = "open",
+                            title = "Open notification",
+                            icon = R.drawable.ic_action_open,
+                            description = "Automatically tap the notification",
+                        )
+                    ),
                 ),
             ),
     )
