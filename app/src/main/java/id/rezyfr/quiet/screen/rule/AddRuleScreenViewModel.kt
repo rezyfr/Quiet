@@ -129,7 +129,7 @@ class AddRuleScreenViewModel(
 
     fun saveRule() {
         val state = _state.value
-        val appText = (state.appItem?.label ?: "any app") + "that "
+        val appText = (state.appItem?.label ?: "any app") + " that "
         val criteria = if (state.criteriaText.isEmpty()) {
             "contains anything "
         } else {

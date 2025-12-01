@@ -4,6 +4,8 @@ import id.rezyfr.quiet.data.dao.RuleDao
 import id.rezyfr.quiet.data.entity.RuleEntity
 import id.rezyfr.quiet.domain.Rule
 import id.rezyfr.quiet.screen.action.ActionItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class RuleRepositoryImpl(
     private val ruleDao: RuleDao,
@@ -36,6 +38,25 @@ class RuleRepositoryImpl(
                 ),
                 enabled = it.enabled
             )
+        }
+    }
+    override suspend fun getAllRules(): Flow<List<Rule>> {
+        return ruleDao.getRulesFlow().map {
+            it.map {
+                Rule(
+                    packageName = it.packageName,
+                    keywords = it.keywords,
+                    dayRange = it.dayRange,
+                    text = it.text,
+                    action = ActionItem(
+                        id = it.action,
+                        title = it.action,
+                        icon = -1,
+                        description = it.action
+                    ),
+                    enabled = it.enabled
+                )
+            }
         }
     }
 }

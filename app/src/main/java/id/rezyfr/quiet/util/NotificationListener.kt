@@ -9,11 +9,11 @@ import id.rezyfr.quiet.domain.NotificationModel
 import id.rezyfr.quiet.domain.Rule
 import id.rezyfr.quiet.domain.RuleAction
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.time.LocalDate
-import java.time.LocalTime
 
 class NotificationListener : NotificationListenerService(), KoinComponent {
 
@@ -44,30 +44,30 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
         val text = sbn.notification.extras.getString("android.text") ?: ""
 
         val content = "$title $text".lowercase()
-        coroutineScope.launch {
-            val rules = ruleRepository.getRules(pkg)
-            if (rules.isEmpty()) return@launch
-            rules.forEach { rule ->
-                // 1. Check keyword
-                val keywordMatch = rule.keywords.any { content.contains(it.lowercase()) }
-                if (!keywordMatch) return@forEach
-                /**
-                 *
-                    // 2. Check day
-                    if (rule.dayRange != null && rule.dayRange.isNotEmpty()) {
-                        val today = LocalDate.now().dayOfWeek
-                        rule.dayRange.forEach {
-                            if (today !in rule.dayRange) return@forEach
-                        }
-                    }
 
-                    // 3. Check time range
-                    val nowMinutes = LocalTime.now().hour * 60 + LocalTime.now().minute
-                    if (nowMinutes !in rule.startMinutes..rule.endMinutes) return@forEach
-                 */
+        val rules = runBlocking {
+            ruleRepository.getRules(pkg)
+        }
 
-                // 4. Perform the action
-                applyAction(rule, sbn)
+        rules.forEach { rule ->
+            val keywordMatch = rule.keywords.any { content.contains(it.lowercase()) }
+            if (!keywordMatch) return@forEach
+            /**
+             *
+            // 2. Check day
+            if (rule.dayRange != null && rule.dayRange.isNotEmpty()) {
+            val today = LocalDate.now().dayOfWeek
+            rule.dayRange.forEach {
+            if (today !in rule.dayRange) return@forEach
+            }
+            }
+
+            // 3. Check time range
+            val nowMinutes = LocalTime.now().hour * 60 + LocalTime.now().minute
+            if (nowMinutes !in rule.startMinutes..rule.endMinutes) return@forEach
+             */
+            if (rule.enabled) {
+                applyAction(rule, sbn) // CANCEL HERE IMMEDIATELY
             }
         }
 
