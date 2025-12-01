@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="id.rezyfr.quiet" />
+                  <option name="mobileSdkAppId" value="1:929668969990:android:be3b3ca46dd8943aee7587" />
+                  <option name="projectId" value="quiet-please-2431" />
+                  <option name="projectNumber" value="929668969990" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

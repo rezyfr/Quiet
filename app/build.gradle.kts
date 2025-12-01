@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
     kotlin("plugin.serialization")
     alias(libs.plugins.detekt.plugin)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -62,6 +63,7 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.firebase.messaging)
     ksp(libs.room.compiler)
 
     testImplementation(libs.junit)

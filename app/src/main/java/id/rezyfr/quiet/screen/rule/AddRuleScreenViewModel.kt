@@ -1,11 +1,16 @@
 package id.rezyfr.quiet.screen.rule
 
+import android.R.attr.action
+import android.R.attr.text
 import android.content.pm.PackageManager
+import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.data.repository.NotificationRepository
+import id.rezyfr.quiet.data.repository.RuleRepository
 import id.rezyfr.quiet.domain.ExtraCriteria
 import id.rezyfr.quiet.domain.NotificationUiModel
+import id.rezyfr.quiet.domain.Rule
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import id.rezyfr.quiet.screen.action.ActionItem
@@ -21,6 +26,7 @@ import kotlinx.coroutines.launch
 class AddRuleScreenViewModel(
     private val navigator: AppComposeNavigator,
     private val repository: NotificationRepository,
+    private val ruleRepository: RuleRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(AddRuleScreenState())
     val state = _state.asStateFlow()
@@ -119,6 +125,35 @@ class AddRuleScreenViewModel(
 
     fun getExtraCriteria() {
         _state.update { it.copy(extraCriteriaList = ExtraCriteria.DEFAULT) }
+    }
+
+    fun saveRule() {
+        val state = _state.value
+        val appText = (state.appItem?.label ?: "any app") + "that "
+        val criteria = if (state.criteriaText.isEmpty()) {
+            "contains anything "
+        } else {
+            "contains ${
+                state.criteriaText.fastJoinToString(" or ") {
+                    "\"${it.capitalize()}\""
+                }
+            } "
+        }
+        val actions = "then ${state.action?.title ?: "do nothing"} "
+        val text = "When I get a notification from " + appText + criteria + actions
+        viewModelScope.launch {
+            ruleRepository.saveRule(
+                Rule(
+                    packageName = listOf(_state.value.appItem?.packageName ?: ""),
+                    keywords = _state.value.criteriaText,
+                    dayRange = null,
+                    text = text,
+                    action = _state.value.action!!,
+                    enabled = true
+                )
+            )
+            navigator.navigateUp()
+        }
     }
 
     data class AddRuleScreenState(

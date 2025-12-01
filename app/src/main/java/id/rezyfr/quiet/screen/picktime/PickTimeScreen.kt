@@ -42,21 +42,23 @@ import org.koin.androidx.compose.koinViewModel
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlin.math.absoluteValue
 
 @Composable
 fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var dialogData by remember { mutableStateOf<DayRange?>(null) }
-    PickTimeContent(state, onPickItemClick = {
-        dialogData = it
-    })
+    PickTimeContent(
+        state,
+        onPickItemClick = {
+            dialogData = it
+        },
+        onPickTimeConfirm = viewModel::pickTime
+    )
 
     if (dialogData != null) {
         TimeRangeDialog(
-            startMinutes = dialogData!!.startMinutes,
-            endMinutes = dialogData!!.endMinutes,
+            dayRange = dialogData!!,
             onDismiss = { dialogData = null },
             onConfirm = { start, end ->
                 viewModel.updateTimeRange(dialogData!!.day, start, end)
@@ -69,7 +71,8 @@ fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
 fun PickTimeContent(
     state: PickTimeViewModel.PickTimeState,
     modifier: Modifier = Modifier,
-    onPickItemClick: (DayRange) -> Unit = { }
+    onPickItemClick: (DayRange) -> Unit = { },
+    onPickTimeConfirm: () -> Unit = { }
 ) {
     val buttonText =
         if (state.isModified) {
@@ -100,7 +103,7 @@ fun PickTimeContent(
                         )
                     )
                     Spacer(Modifier.height(spacingX))
-                    PrimaryButton(buttonText, Modifier.fillMaxWidth())
+                    PrimaryButton(buttonText, Modifier.fillMaxWidth(), onClick = onPickTimeConfirm)
                 }
             }
         }
@@ -111,14 +114,14 @@ fun PickTimeContent(
         ) {
             items(state.days) { time ->
                 PickTimeItem(
-                    day = time.day.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                    time.startMinutes,
-                    time.endMinutes,
                     modifier = Modifier.clickable(
                         onClick = {
                             onPickItemClick(time)
                         }
-                    )
+                    ),
+                    day = time.day.getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                    time.startMinutes,
+                    time.endMinutes,
                 )
             }
         }
@@ -126,12 +129,11 @@ fun PickTimeContent(
 }
 @Composable
 fun PickTimeItem(
+    modifier: Modifier = Modifier,
     day: String = "Monday",
     startMinutes: Int = 0,
     endMinutes: Int = 1440,
-    modifier: Modifier = Modifier,
 ) {
-    print("startMinutes: $startMinutes, selectedWeight: ${(endMinutes - startMinutes) / 1440f}, endMinutes: $endMinutes")
     val totalMinutes = 1440.toFloat()
     val startWeight: Float = startMinutes / totalMinutes
     val selectedWeight = (endMinutes - startMinutes).toFloat() / totalMinutes
@@ -147,38 +149,7 @@ fun PickTimeItem(
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(spacingX))
-        Row(
-            modifier = Modifier.clip(RoundedCornerShape(8.dp))
-        ) {
-            if (startWeight > 0) {
-                Box(
-                    Modifier
-                        .weight(startWeight)
-                        .background(
-                            color = MaterialTheme.colorScheme.tertiaryContainer
-                        )
-                        .height(36.dp)
-                )
-            }
-            Box(
-                Modifier
-                    .weight(selectedWeight)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    .height(36.dp)
-            )
-            if (endWeight > 0) {
-                Box(
-                    Modifier
-                        .weight(endWeight)
-                        .background(
-                            color = MaterialTheme.colorScheme.tertiaryContainer
-                        )
-                        .height(36.dp)
-                )
-            }
-        }
+        TimeRangeBar(startWeight, selectedWeight, endWeight)
         Spacer(Modifier.height(spacing))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             CompositionLocalProvider(
@@ -194,6 +165,46 @@ fun PickTimeItem(
                 Text("6PM")
                 Text("12AM")
             }
+        }
+    }
+}
+
+@Composable
+private fun TimeRangeBar(
+    startWeight: Float,
+    selectedWeight: Float,
+    endWeight: Float
+) {
+    Row(
+        modifier = Modifier.clip(RoundedCornerShape(8.dp))
+    ) {
+        if (startWeight > 0) {
+            Box(
+                Modifier
+                    .weight(startWeight)
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                    .height(36.dp)
+            )
+        }
+        Box(
+            Modifier
+                .weight(selectedWeight)
+                .background(
+                    color = MaterialTheme.colorScheme.primary
+                )
+                .height(36.dp)
+        )
+        if (endWeight > 0) {
+            Box(
+                Modifier
+                    .weight(endWeight)
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                    .height(36.dp)
+            )
         }
     }
 }
