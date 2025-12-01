@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "929668969990",
+    "project_id": "quiet-please-2431",
+    "storage_bucket": "quiet-please-2431.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:929668969990:android:be3b3ca46dd8943aee7587",
+        "android_client_info": {
+          "package_name": "id.rezyfr.quiet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB46tXGlcwiCMbdkE1n-z1-_MntjF1NzGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

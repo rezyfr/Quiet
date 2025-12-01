@@ -4,17 +4,23 @@ import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import id.rezyfr.quiet.data.repository.NotificationRepository
+import id.rezyfr.quiet.data.repository.RuleRepository
 import id.rezyfr.quiet.domain.NotificationModel
+import id.rezyfr.quiet.domain.Rule
+import id.rezyfr.quiet.domain.RuleAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.time.LocalDate
+import java.time.LocalTime
 
 class NotificationListener : NotificationListenerService(), KoinComponent {
 
     private val dataMap = HashMap<String, NotificationModel>()
 
-    private val repository: NotificationRepository by inject()
+    private val notificationRepository: NotificationRepository by inject()
+    private val ruleRepository: RuleRepository by inject()
     private val coroutineScope: CoroutineScope by inject()
 
     override fun onListenerConnected() {
@@ -33,6 +39,38 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        val pkg = sbn.packageName
+        val title = sbn.notification.extras.getString("android.title") ?: ""
+        val text = sbn.notification.extras.getString("android.text") ?: ""
+
+        val content = "$title $text".lowercase()
+        coroutineScope.launch {
+            val rules = ruleRepository.getRules(pkg)
+            if (rules.isEmpty()) return@launch
+            rules.forEach { rule ->
+                // 1. Check keyword
+                val keywordMatch = rule.keywords.any { content.contains(it.lowercase()) }
+                if (!keywordMatch) return@forEach
+                /**
+                 *
+                    // 2. Check day
+                    if (rule.dayRange != null && rule.dayRange.isNotEmpty()) {
+                        val today = LocalDate.now().dayOfWeek
+                        rule.dayRange.forEach {
+                            if (today !in rule.dayRange) return@forEach
+                        }
+                    }
+
+                    // 3. Check time range
+                    val nowMinutes = LocalTime.now().hour * 60 + LocalTime.now().minute
+                    if (nowMinutes !in rule.startMinutes..rule.endMinutes) return@forEach
+                 */
+
+                // 4. Perform the action
+                applyAction(rule, sbn)
+            }
+        }
+
         saveNotification(sbn)
     }
 
@@ -40,7 +78,7 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
         dataMap.forEach { (k, v) ->
             if (v.saved) return@forEach
             coroutineScope.launch {
-                val saveOperation = repository.saveNotification(v)
+                val saveOperation = notificationRepository.saveNotification(v)
                 if (saveOperation != -1L) {
                     dataMap[k] = v.copy(saved = true)
                 }
@@ -52,7 +90,7 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
         val notificationItem = createNotificationItem(sbn)
         dataMap[sbn.key] = notificationItem
         coroutineScope.launch {
-            val saveOperation = repository.saveNotification(notificationItem)
+            val saveOperation = notificationRepository.saveNotification(notificationItem)
             if (saveOperation != -1L) {
                 dataMap[sbn.key] = notificationItem.copy(saved = true)
             }
@@ -68,6 +106,14 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
             postTime = sbn.postTime,
             saved = false,
         )
+    }
+
+    fun applyAction(rule: Rule, sbn: StatusBarNotification) {
+        when (rule.action.id) {
+            RuleAction.MUTE.toString() -> cancelNotification(sbn.key)
+            RuleAction.BLOCK.toString() -> cancelNotification(sbn.key)
+            else -> { /* custom action */ }
+        }
     }
 }
 

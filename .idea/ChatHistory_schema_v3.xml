@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChatHistoryState">
-    <option name="chatSessions" value="{&quot;c3cbe452-ce86-4f3c-807f-98a4f260dc27&quot;:{&quot;id&quot;:&quot;c3cbe452-ce86-4f3c-807f-98a4f260dc27&quot;,&quot;name&quot;:&quot;New Chat&quot;,&quot;timestamp&quot;:1764433192631,&quot;messages&quot;:[]}}" />
+    <option name="chatSessions" value="{&quot;38361253-3443-429f-9033-94d46b8bb9f9&quot;:{&quot;id&quot;:&quot;38361253-3443-429f-9033-94d46b8bb9f9&quot;,&quot;name&quot;:&quot;Implementing Firebase Cloud Messaging (FCM) in a Project&quot;,&quot;timestamp&quot;:1764571088845,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:[{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;\u003cuser_query\u003e\nimplement fcm on this project\n\u003c/user_query\u003e&quot;}]},{&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:[]}]}}" />
   </component>
 </project>

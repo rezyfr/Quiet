@@ -124,10 +124,15 @@ fun AddRuleScreen(
                 ExtraCriteriaType.TIME -> {
                     viewModel.navigateToPickTime()
                 }
-                ExtraCriteriaType.CALL_STATUS -> TODO()
+                ExtraCriteriaType.CALL_STATUS -> {
+
+                }
             }
         },
         onAddExtraCriteriaClick = { showExtraSheet = true },
+        onSaveClick = {
+            viewModel.saveRule()
+        },
         state = state,
     )
 
