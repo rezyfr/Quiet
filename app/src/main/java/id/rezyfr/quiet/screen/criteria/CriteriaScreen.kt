@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,7 +47,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
-import id.rezyfr.quiet.component.WavyText
+import id.rezyfr.quiet.ui.component.ExtendedSpansText
+import id.rezyfr.quiet.ui.component.withSquiggly
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingH
@@ -147,9 +149,13 @@ private fun CriteriaTopBar() {
             )
     ) {
         Column(Modifier.padding(spacingXX)) {
-            Text(stringResource(R.string.when_notification))
-            Spacer(Modifier.height(spacing))
-            WavyText(text = stringResource(R.string.criteria_contains_any_of))
+            ExtendedSpansText(
+                text = buildAnnotatedString {
+                    append(stringResource(R.string.when_notification))
+                    append(" ")
+                    withSquiggly(stringResource(R.string.criteria_contains_any_of))
+                }
+            )
         }
     }
 }
@@ -229,8 +235,11 @@ fun PhraseDialogContent(
     ) {
         Column(modifier = Modifier.padding(spacingXX)) {
             // Title
-            WavyText(text = stringResource(R.string.criteria_notification_contains))
-
+            ExtendedSpansText(
+                text = buildAnnotatedString {
+                    withSquiggly(stringResource(R.string.criteria_notification_contains))
+                }
+            )
             Spacer(Modifier.height(spacingX))
             // Input
             TextField(

@@ -12,7 +12,7 @@
     <string name="rule_save">Save rule</string>
     <string name="rule_any_app">any app</string>
     <string name="rule_contains">contains \"%1$s\"</string>
-    <string name="rule_when_notification">When I get a notification</string>
+    <string name="rule_when_notification">When I get a notification from </string>
     <string name="rule_contains_anything">contains anything</string>
     <string name="from">"from "</string>
     <string name="then">"then "</string>

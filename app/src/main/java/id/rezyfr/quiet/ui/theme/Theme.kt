@@ -11,31 +11,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val DarkBackground = Color(0xFF0E0E0E) // near-black
-private val DarkSurface = Color(0xFF1A1A1A) // soft dark gray
-private val DarkCard = Color(0xFF191A1C) // slightly lighter for cards
+private val DarkBackground = Color(0xFF0a0b0d) // near-black
+private val DarkCard = Color(0xFF1a1c21) // slightly lighter for cards
+private val BlackText = Color(0xFF1a1c21)
 
-private val YellowPrimary = Color(0xFFFFE68A) // warm muted yellow
-private val YellowContainer = Color(0xFFFFF387) // pale yellow container
+private val YellowPrimary = Color(0xFFfff387) // warm muted yellow
 
 private val TextPrimary = Color(0xFFFFFFFF)
-private val TextSecondary = Color(0xFFCECECE) // subtle gray
+private val TextSecondary = Color(0xFF848485) // subtle gray
+private val TextHint = Color(0xFFc4c4c7) // light gray for hints
+private val TextFieldBackground = Color(0xFF3f414b) // dark gray for text fields
 
-private val TextFieldBackground = Color(0xFF3f424b) // dark gray for text fields
-val IconBlueBackground = Color(0xFF92d1f2)
-val IconBlueContent = Color(0xFF143055)
+val SilenceBackground = Color(0xFF92d1f2)
+val SilenceContent = Color(0xFF143055)
+val AttentionContent = Color(0xFF531e1e)
+val AttentionBackground = Color(0xFFff7070)
+val DelayContent = Color(0xFF824941)
+val DelayBackground = Color(0xFFff8b71)
+
+val DismissContent = Color(0xFF4b3528)
+val DismissBackground = YellowPrimary
+
+
 
 private val DarkColorScheme =
     darkColorScheme(
         primary = YellowPrimary,
-        onPrimary = Color.Black,
-        primaryContainer = YellowContainer,
-        onPrimaryContainer = Color.Black,
+        onPrimary = BlackText,
+        primaryContainer = YellowPrimary,
+        onPrimaryContainer = BlackText,
         secondaryContainer = DarkCard,
         onSecondaryContainer = YellowPrimary,
         background = DarkBackground,
         onBackground = TextPrimary,
-        surface = DarkSurface,
+        surface = DarkCard,
         onSurface = TextPrimary,
         surfaceVariant = DarkCard,
         onSurfaceVariant = TextSecondary,
@@ -55,9 +64,9 @@ val QuietTypography =
         headlineMedium =
         androidx.compose.ui.text.TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold),
         bodyLarge =
-        androidx.compose.ui.text.TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal),
+        androidx.compose.ui.text.TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold),
         bodyMedium =
-        androidx.compose.ui.text.TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal),
+        androidx.compose.ui.text.TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
     )
 
 @Composable

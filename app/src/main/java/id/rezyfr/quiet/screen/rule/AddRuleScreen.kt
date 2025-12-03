@@ -1,13 +1,11 @@
 package id.rezyfr.quiet.screen.rule
 
-import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,17 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,16 +39,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastJoinToString
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
-import id.rezyfr.quiet.component.WavyText
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
 import id.rezyfr.quiet.domain.model.CriteriaType
@@ -62,13 +64,14 @@ import id.rezyfr.quiet.domain.model.TimeCriteria
 import id.rezyfr.quiet.domain.model.getCriteriaTypes
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
+import id.rezyfr.quiet.ui.component.ExtendedSpansText
+import id.rezyfr.quiet.ui.component.withSquiggly
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXX
 import id.rezyfr.quiet.util.describe
-import id.rezyfr.quiet.util.drawable
 import id.rezyfr.quiet.util.getAppItem
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
@@ -164,75 +167,49 @@ fun AddRuleContent(
     onAddExtraCriteriaClick: () -> Unit = {},
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
 ) {
-    Surface(modifier.background(MaterialTheme.colorScheme.background)) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(spacingX),
-            contentPadding = PaddingValues(bottom = spacingXX),
-        ) {
-            // ----- HEADER -----
-            item {
-                RuleEditorHeader(
-                    state = state,
-                    onAppClick = onAppClick,
-                    onCriteriaClick = onCriteriaClick,
-                    onActionClick = onActionClick,
-                    onAddExtraCriteriaClick = onAddExtraCriteriaClick,
-                    onExtraCriteriaClick = onExtraCriteriaClick,
-                )
-            }
+    LazyColumn(
+        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(spacingX),
+        contentPadding = PaddingValues(bottom = spacingXX),
+    ) {
+        // ----- HEADER -----
+        item {
+            RuleEditorHeader(
+                state = state,
+                onAppClick = onAppClick,
+                onCriteriaClick = onCriteriaClick,
+                onActionClick = onActionClick,
+                onAddExtraCriteriaClick = onAddExtraCriteriaClick,
+            )
+        }
 
-            item { Spacer(Modifier.height(12.dp)) }
+        item { Spacer(Modifier.height(12.dp)) }
 
-            // ----- SAVE BUTTON -----
-            item {
-                PrimaryButton(
-                    text = stringResource(R.string.rule_save),
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onSaveClick,
-                )
-            }
+        // ----- SAVE BUTTON -----
+        item {
+            PrimaryButton(
+                text = stringResource(R.string.rule_save),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onSaveClick,
+            )
+        }
 
-            item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(top = 24.dp).fillMaxWidth(),
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                )
-            }
+        item {
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 24.dp).fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+            )
+        }
 
-            // ----- RECENT MATCHING -----
-            item {
-                RecentMatchingNotificationsSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    notifications = state.notificationList,
-                )
-            }
+        // ----- RECENT MATCHING -----
+        item {
+            RecentMatchingNotificationsSection(
+                modifier = Modifier.fillMaxWidth(),
+                notifications = state.notificationList,
+            )
         }
     }
 }
-
-@Composable
-private fun ExtraCriteriaText(
-    extraCriteriaText: List<RuleCriteria>,
-    onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
-    onAddExtraCriteriaClick: () -> Unit = {}
-) {
-    if (extraCriteriaText.isEmpty()) return
-    extraCriteriaText.forEachIndexed { index, criteria ->
-        if (index != 0) {
-            Text(" and")
-        }
-        Row {
-            Text(" ")
-            WavyText(criteria.describe(), onClick = { onExtraCriteriaClick(criteria) })
-            if (index == extraCriteriaText.lastIndex) {
-                AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
-            }
-        }
-        Spacer(Modifier.width(spacing))
-    }
-}
-
 
 @Composable
 fun RuleEditorHeader(
@@ -240,148 +217,67 @@ fun RuleEditorHeader(
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
-    onActionClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
-    onExtraCriteriaClick: (RuleCriteria) -> Unit = {}
-) {
-    val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
-    val containsText =
-        if (state.criteriaText.isEmpty()) {
-            stringResource(R.string.rule_contains_anything)
-        } else {
-            "contains ${
-                state.criteriaText.fastJoinToString(" or ") {
-                    "\"${it.capitalize()}\""
-                }
-            }"
-        }
-
-    FlowRow(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(spacing)
-    ) {
-        CompositionLocalProvider(
-            LocalTextStyle provides
-                MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-        ) {
-            Text(
-                stringResource(R.string.rule_when_notification),
-                Modifier.padding(bottom = spacingX)
-            )
-            RuleApps(state, state.appItem?.icon, appText, onAppClick)
-            RuleCriteria(containsText, onCriteriaClick)
-            if (state.selectedCriteria.isEmpty()) {
-                AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
-            }
-            RuleExtraCriteria(state.selectedCriteria, onExtraCriteriaClick)
-            RuleActions(state, onActionClick)
-        }
-    }
-}
-
-@Composable
-private fun AddExtraCriteria(onAddExtraCriteriaClick: () -> Unit) {
-    Spacer(Modifier.width(spacingSmall))
-    Box(
-        Modifier.background(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(8.dp)
-        )
-            .clickable(onClick = onAddExtraCriteriaClick)
-    ) {
-        Text(
-            text = "+",
-            modifier =
-            Modifier.padding(horizontal = 8.dp, vertical = spacingSmall)
-                .align(Alignment.Center),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    }
-    Spacer(Modifier.width(spacingSmall))
-}
-
-@Composable
-private fun RuleCriteria(containsText: String, onCriteriaClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.Top) {
-        WavyText(text = containsText, onClick = onCriteriaClick)
-    }
-}
-
-@Composable
-private fun RuleExtraCriteria(
-    extraCriteria: List<RuleCriteria>,
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
-    onAddExtraCriteriaClick: () -> Unit = {}
+    onActionClick: () -> Unit = {}
 ) {
-    FlowRow(verticalArrangement = Arrangement.Top) {
-        ExtraCriteriaText(
-            extraCriteriaText = extraCriteria,
-            onExtraCriteriaClick = onExtraCriteriaClick,
-            onAddExtraCriteriaClick = onAddExtraCriteriaClick
-        )
+    val appText = state.appItem?.label ?: "any app"
+    val containsText = if (state.criteriaText.isEmpty()) {
+        "contains anything"
+    } else {
+        "contains " + state.criteriaText.joinToString(" or ") { "\"${it.capitalize()}\"" }
     }
-}
 
-@Composable
-private fun RuleApps(
-    state: AddRuleScreenViewModel.AddRuleScreenState,
-    icon: Drawable?,
-    appText: String,
-    onAppClick: () -> Unit,
-) {
-    Row(verticalAlignment = Alignment.Top) {
-        Text(stringResource(R.string.from))
-
-        if (state.appItem?.icon != null) {
-            Icon(
-                painter = rememberDrawablePainter(icon),
-                contentDescription = null,
-                tint = Color.Unspecified, // show original icon color
-                modifier = Modifier.size(22.dp).clip(CircleShape),
-            )
-            Spacer(Modifier.width(6.dp))
-        }
-
-        WavyText(text = appText, onClick = onAppClick)
-
-        Text(" that ")
-    }
-}
-
-@Composable
-private fun RuleActions(
-    state: AddRuleScreenViewModel.AddRuleScreenState,
-    onActionClick: () -> Unit,
-) {
-    Row(verticalAlignment = Alignment.Top) {
-        Text(stringResource(R.string.then))
-
-        if (state.action?.icon != null) {
-            val context = LocalContext.current
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(24.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        painter = state.action.icon.drawable(context),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.background,
-                        modifier = Modifier.size(14.dp),
-                    )
+    ExtendedSpansText(
+        modifier = modifier.padding(vertical = 16.dp),
+        inlineContent = mapOf("plus" to inlinePlus {}),
+        bottomOffset = 8.sp,
+        lineHeight = 60.sp,
+        text = buildAnnotatedString {
+            append(stringResource(R.string.rule_when_notification))
+            withSquiggly(" $appText", onAppClick)
+            append(" that ")
+            withSquiggly(containsText, onCriteriaClick)
+            if (state.selectedCriteria.isEmpty()) {
+                AddExtraCriteria(onAddExtraCriteriaClick)
+            }
+            if (state.selectedCriteria.isNotEmpty()) {
+                state.selectedCriteria.forEachIndexed { index, criteria ->
+                    if (index != 0) {
+                        append(" and")
+                    }
+                    Row {
+                        withSquiggly(" ${criteria.describe()}") {
+                            onExtraCriteriaClick.invoke(criteria)
+                        }
+                        if (index == state.selectedCriteria.lastIndex) {
+                            AddExtraCriteria(onAddExtraCriteriaClick)
+                        }
+                    }
+                    Spacer(Modifier.width(spacing))
                 }
             }
-            Spacer(Modifier.width(6.dp))
-        }
+            append(" then ")
 
-        WavyText(
-            text = state.action?.title ?: stringResource(R.string.rule_do_nothing),
-            onClick = onActionClick,
+            withSquiggly(state.action?.title ?: "do nothing", onActionClick)
+        },
+        textStyle = MaterialTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            lineHeight = 60.sp
         )
+    )
+}
+
+@Composable
+private fun AnnotatedString.Builder.AddExtraCriteria(onAddExtraCriteriaClick: () -> Unit) {
+    append(" ")
+    withLink(
+        LinkAnnotation.Clickable(tag = "tag", linkInteractionListener = {
+            onAddExtraCriteriaClick()
+        })
+    ) {
+        appendInlineContent("plus", "plus")
     }
 }
 
@@ -548,6 +444,32 @@ fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onC
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = spacingX, vertical = spacing)
         )
+    }
+}
+
+@Composable
+fun inlinePlus(onClick: () -> Unit): InlineTextContent {
+    return InlineTextContent(
+        placeholder = Placeholder(
+            height = 40.sp, // roughly width of the word
+            width = 30.sp,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .clickable { onClick() }
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                "+",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }
 

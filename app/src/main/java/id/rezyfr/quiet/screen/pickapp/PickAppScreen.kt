@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -42,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,10 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
-import id.rezyfr.quiet.component.WavyText
+import id.rezyfr.quiet.ui.component.ExtendedSpansText
+import id.rezyfr.quiet.ui.component.withSquiggly
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacingH
-import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXH
 import id.rezyfr.quiet.ui.theme.spacingXX
@@ -102,11 +101,13 @@ fun PickAppContent(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
         ) {
-            Row(verticalAlignment = Alignment.Top) {
-                Text(stringResource(R.string.when_notification))
-                Spacer(Modifier.width(spacingSmall))
-                WavyText(text = stringResource(R.string.pick_is_from))
-            }
+            ExtendedSpansText(
+                text = buildAnnotatedString {
+                    append(stringResource(R.string.when_notification))
+                    append(" ")
+                    withSquiggly(stringResource(R.string.pick_is_from))
+                }
+            )
         }
 
         Spacer(Modifier.height(spacingX))

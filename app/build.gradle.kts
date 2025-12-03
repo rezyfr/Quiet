@@ -1,3 +1,9 @@
+import com.android.build.gradle.ProguardFiles.getDefaultProguardFile
+import org.gradle.kotlin.dsl.android
+import org.gradle.kotlin.dsl.detekt
+import org.gradle.kotlin.dsl.ksp
+import org.gradle.kotlin.dsl.libs
+
 plugins {
     id("quiet.android.application")
     id("quiet.android.application.compose")
@@ -60,7 +66,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.accompanist.drawablepainter)
     implementation(libs.kotlinx.serialization.json)
-
+    implementation("me.saket.extendedspans:extendedspans:1.4.0")
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.firebase.messaging)

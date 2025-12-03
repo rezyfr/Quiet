@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
-import id.rezyfr.quiet.ui.theme.IconBlueBackground
-import id.rezyfr.quiet.ui.theme.IconBlueContent
 import id.rezyfr.quiet.ui.theme.QuietTheme
+import id.rezyfr.quiet.ui.theme.SilenceBackground
+import id.rezyfr.quiet.ui.theme.SilenceContent
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
@@ -182,14 +182,14 @@ fun ActionCard(
             Box(
                 modifier =
                 Modifier.size(48.dp)
-                    .background(IconBlueBackground, RoundedCornerShape(12.dp))
+                    .background(SilenceBackground, RoundedCornerShape(12.dp))
                     .padding(spacing),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = item.icon.drawable(context),
                     contentDescription = null,
-                    tint = IconBlueContent,
+                    tint = SilenceContent,
                 )
             }
 
