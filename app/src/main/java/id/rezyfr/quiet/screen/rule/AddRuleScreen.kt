@@ -52,9 +52,14 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.component.WavyText
-import id.rezyfr.quiet.domain.ExtraCriteria
-import id.rezyfr.quiet.domain.ExtraCriteriaType
-import id.rezyfr.quiet.domain.NotificationUiModel
+import id.rezyfr.quiet.domain.model.BluetoothCriteria
+import id.rezyfr.quiet.domain.model.CallCriteria
+import id.rezyfr.quiet.domain.model.CriteriaType
+import id.rezyfr.quiet.domain.model.NotificationUiModel
+import id.rezyfr.quiet.domain.model.PostureCriteria
+import id.rezyfr.quiet.domain.model.RuleCriteria
+import id.rezyfr.quiet.domain.model.TimeCriteria
+import id.rezyfr.quiet.domain.model.getCriteriaTypes
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.theme.QuietTheme
@@ -62,6 +67,7 @@ import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXX
+import id.rezyfr.quiet.util.describe
 import id.rezyfr.quiet.util.drawable
 import id.rezyfr.quiet.util.getAppItem
 import kotlinx.serialization.json.Json
@@ -77,11 +83,10 @@ fun AddRuleScreen(
     val backStackEntry = navController.currentBackStackEntryAsState().value
     val appPackageName = backStackEntry?.savedStateHandle?.get<String>("key_pick_apps")
     val pickedApp = remember(appPackageName) { getAppItem(pm, appPackageName.orEmpty()) }
-    var showExtraSheet by remember { mutableStateOf(false) }
+    var showCriteriaPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.getRecentNotification(pm, null)
-        viewModel.getExtraCriteria()
     }
 
     LaunchedEffect(appPackageName) {
@@ -119,31 +124,31 @@ fun AddRuleScreen(
         onAppClick = { viewModel.navigateToPickApp() },
         onCriteriaClick = { viewModel.navigateToPickCriteria() },
         onActionClick = { viewModel.navigateToPickAction() },
-        onExtraCriteriaClick = { id ->
-            when (id) {
-                ExtraCriteriaType.TIME -> {
+        onExtraCriteriaClick = { criteria ->
+            when (criteria) {
+                is TimeCriteria -> {
                     viewModel.navigateToPickTime()
                 }
-                ExtraCriteriaType.CALL_STATUS -> {
-
-                }
+                is BluetoothCriteria -> TODO()
+                is CallCriteria -> TODO()
+                is PostureCriteria -> TODO()
             }
         },
-        onAddExtraCriteriaClick = { showExtraSheet = true },
+        onAddExtraCriteriaClick = { showCriteriaPicker = true },
         onSaveClick = {
             viewModel.saveRule()
         },
         state = state,
     )
 
-    if (showExtraSheet) {
+    if (showCriteriaPicker) {
         ExtraCriteriaBottomSheet(
-            items = state.extraCriteriaList,
+            items = viewModel.getAvailableCriteria(),
             onItemClick = { criteria ->
-                showExtraSheet = false
-                viewModel.addExtraCriteria(criteria)
+                showCriteriaPicker = false
+                viewModel.addCriteria(criteria)
             },
-            onDismiss = { showExtraSheet = false }
+            onDismiss = { showCriteriaPicker = false }
         )
     }
 }
@@ -157,7 +162,7 @@ fun AddRuleContent(
     onActionClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
-    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
+    onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
 ) {
     Surface(modifier.background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -208,8 +213,8 @@ fun AddRuleContent(
 
 @Composable
 private fun ExtraCriteriaText(
-    extraCriteriaText: List<ExtraCriteria>,
-    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
+    extraCriteriaText: List<RuleCriteria>,
+    onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {}
 ) {
     if (extraCriteriaText.isEmpty()) return
@@ -219,7 +224,7 @@ private fun ExtraCriteriaText(
         }
         Row {
             Text(" ")
-            WavyText("${criteria.description}", onClick = { onExtraCriteriaClick(criteria.id) })
+            WavyText(criteria.describe(), onClick = { onExtraCriteriaClick(criteria) })
             if (index == extraCriteriaText.lastIndex) {
                 AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
             }
@@ -227,6 +232,7 @@ private fun ExtraCriteriaText(
         Spacer(Modifier.width(spacing))
     }
 }
+
 
 @Composable
 fun RuleEditorHeader(
@@ -236,7 +242,7 @@ fun RuleEditorHeader(
     onCriteriaClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
-    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {}
+    onExtraCriteriaClick: (RuleCriteria) -> Unit = {}
 ) {
     val appText = state.appItem?.label ?: stringResource(R.string.rule_any_app)
     val containsText =
@@ -267,10 +273,10 @@ fun RuleEditorHeader(
             )
             RuleApps(state, state.appItem?.icon, appText, onAppClick)
             RuleCriteria(containsText, onCriteriaClick)
-            if (state.selectedExtraCriteria.isEmpty()) {
+            if (state.selectedCriteria.isEmpty()) {
                 AddExtraCriteria(onAddExtraCriteriaClick = onAddExtraCriteriaClick)
             }
-            RuleExtraCriteria(state.selectedExtraCriteria, onExtraCriteriaClick)
+            RuleExtraCriteria(state.selectedCriteria, onExtraCriteriaClick)
             RuleActions(state, onActionClick)
         }
     }
@@ -278,7 +284,7 @@ fun RuleEditorHeader(
 
 @Composable
 private fun AddExtraCriteria(onAddExtraCriteriaClick: () -> Unit) {
-    Spacer(Modifier.width(spacing))
+    Spacer(Modifier.width(spacingSmall))
     Box(
         Modifier.background(
             color = MaterialTheme.colorScheme.primaryContainer,
@@ -294,6 +300,7 @@ private fun AddExtraCriteria(onAddExtraCriteriaClick: () -> Unit) {
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
+    Spacer(Modifier.width(spacingSmall))
 }
 
 @Composable
@@ -305,8 +312,8 @@ private fun RuleCriteria(containsText: String, onCriteriaClick: () -> Unit) {
 
 @Composable
 private fun RuleExtraCriteria(
-    extraCriteria: List<ExtraCriteria>,
-    onExtraCriteriaClick: (ExtraCriteriaType) -> Unit = {},
+    extraCriteria: List<RuleCriteria>,
+    onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {}
 ) {
     FlowRow(verticalArrangement = Arrangement.Top) {
@@ -340,7 +347,7 @@ private fun RuleApps(
 
         WavyText(text = appText, onClick = onAppClick)
 
-        Text(" that")
+        Text(" that ")
     }
 }
 
@@ -494,8 +501,8 @@ fun RecentNotificationCard(
 @Composable
 fun ExtraCriteriaBottomSheet(
     modifier: Modifier = Modifier,
-    items: List<ExtraCriteria>,
-    onItemClick: (ExtraCriteria) -> Unit,
+    items: List<CriteriaType>,
+    onItemClick: (CriteriaType) -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(
@@ -515,8 +522,8 @@ fun ExtraCriteriaBottomSheet(
 @Composable
 fun ExtraCriteriaBottomSheetContent(
     modifier: Modifier = Modifier,
-    items: List<ExtraCriteria> = listOf(),
-    onItemClick: (ExtraCriteria) -> Unit = {}
+    items: List<CriteriaType> = listOf(),
+    onItemClick: (CriteriaType) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth().padding(horizontal = spacingXX, vertical = spacingXX)
@@ -529,14 +536,14 @@ fun ExtraCriteriaBottomSheetContent(
 }
 
 @Composable
-fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: ExtraCriteria, onClick: () -> Unit) {
+fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Text(
-            text = "filter by ${criteria.label}",
+            text = "filter by ${criteria.value}",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = spacingX, vertical = spacing)
@@ -547,7 +554,7 @@ fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: ExtraCriteria, on
 @Preview(showBackground = true)
 @Composable
 private fun ExtraCriteriaBottomSheetPreview() {
-    QuietTheme { ExtraCriteriaBottomSheetContent(items = ExtraCriteria.DEFAULT) }
+    QuietTheme { ExtraCriteriaBottomSheetContent(items = getCriteriaTypes(listOf())) }
 }
 
 @Preview(showBackground = true)
@@ -578,7 +585,7 @@ private fun AddRuleFilledPreview() {
                     )!!,
                 ),
                 criteriaText = listOf("meeting", "call"),
-                selectedExtraCriteria = ExtraCriteria.DEFAULT,
+                selectedCriteria = listOf(TimeCriteria("anytime", null)),
                 action = null,
             ),
         )

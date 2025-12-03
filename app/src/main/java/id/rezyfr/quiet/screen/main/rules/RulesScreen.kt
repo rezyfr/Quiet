@@ -43,8 +43,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
-import id.rezyfr.quiet.domain.Rule
-import id.rezyfr.quiet.screen.action.ActionItem
+import id.rezyfr.quiet.domain.model.CallCriteria
+import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
@@ -53,6 +54,7 @@ import id.rezyfr.quiet.ui.theme.spacingXH
 import id.rezyfr.quiet.ui.theme.spacingXX
 import id.rezyfr.quiet.ui.theme.spacingXXX
 import id.rezyfr.quiet.ui.theme.spacingXXXXX
+import id.rezyfr.quiet.util.describe
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -218,7 +220,7 @@ fun RuleItemContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = rule.text,  // e.g. "When I get a notification from Gmail during schedule then mute"
+                    text = rule.describe(),  // e.g. "When I get a notification from Gmail during schedule then mute"
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(spacingX)
@@ -337,14 +339,13 @@ fun PreviewRulesMainContent() {
         RulesMainContent(
             rules = listOf(
                 Rule(
-                    listOf("id.quiet.rezyfr"),
-                        keywords = listOf("Sampah"),
-                        dayRange = null,
-                        text = "When I get a notification from \"Teams\" during schedule then mute",
-                        action = ActionItem(
-                            "mute","Mute","mute",-1
-                        ),
-                        enabled = false,
+                   id = 0,
+                   name = "",
+                   enabled = true,
+                   apps =     listOf("id.rezyfr.quiet"),
+                   keywords = listOf("Sampah") ,
+                   criteria = listOf(CallCriteria("on_call")),
+                   action = CooldownAction("cooldown", 10)
                 )
             )
         )

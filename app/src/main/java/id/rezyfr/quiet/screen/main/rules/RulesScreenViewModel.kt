@@ -3,7 +3,7 @@ package id.rezyfr.quiet.screen.main.rules
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.data.repository.RuleRepository
-import id.rezyfr.quiet.domain.Rule
+import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import kotlinx.coroutines.flow.MutableStateFlow

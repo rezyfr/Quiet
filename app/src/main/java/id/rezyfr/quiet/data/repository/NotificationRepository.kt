@@ -1,7 +1,7 @@
 package id.rezyfr.quiet.data.repository
 
 import id.rezyfr.quiet.data.entity.NotificationEntity
-import id.rezyfr.quiet.domain.NotificationModel
+import id.rezyfr.quiet.domain.model.NotificationModel
 import kotlinx.coroutines.flow.Flow
 
 interface NotificationRepository {

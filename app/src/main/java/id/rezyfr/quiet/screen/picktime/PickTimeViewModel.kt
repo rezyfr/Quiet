@@ -1,11 +1,11 @@
 package id.rezyfr.quiet.screen.picktime
 
 import androidx.lifecycle.ViewModel
+import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 
 class PickTimeViewModel(
@@ -29,13 +29,13 @@ class PickTimeViewModel(
     }
 
     fun pickTime() {
-        appComposeNavigator.navigateBackWithResult("key_pick_time", _state.value, QuietScreens.AddRules.route)
+        appComposeNavigator.navigateBackWithResult("key_pick_time", _state.value.days, QuietScreens.AddRules.route)
     }
 
     data class PickTimeState(
-        val days: List<DayRange> =
+        val days: List<TimeRange> =
             DayOfWeek.entries.map {
-                DayRange(
+                TimeRange(
                     day = it,
                     startMinutes = 0,
                     endMinutes = 1440,
@@ -44,10 +44,3 @@ class PickTimeViewModel(
         val isModified: Boolean = false
     )
 }
-
-@Serializable
-data class DayRange(
-    val day: DayOfWeek,
-    val startMinutes: Int,
-    val endMinutes: Int
-)

@@ -1,27 +1,34 @@
 package id.rezyfr.quiet.screen.rule
 
-import android.R.attr.action
-import android.R.attr.text
 import android.content.pm.PackageManager
-import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.data.repository.NotificationRepository
 import id.rezyfr.quiet.data.repository.RuleRepository
-import id.rezyfr.quiet.domain.ExtraCriteria
-import id.rezyfr.quiet.domain.NotificationUiModel
-import id.rezyfr.quiet.domain.Rule
+import id.rezyfr.quiet.domain.model.BatchAction
+import id.rezyfr.quiet.domain.model.BluetoothCriteria
+import id.rezyfr.quiet.domain.model.CallCriteria
+import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.CriteriaType
+import id.rezyfr.quiet.domain.model.DismissAction
+import id.rezyfr.quiet.domain.model.NotificationUiModel
+import id.rezyfr.quiet.domain.model.PostureCriteria
+import id.rezyfr.quiet.domain.model.Rule
+import id.rezyfr.quiet.domain.model.RuleAction
+import id.rezyfr.quiet.domain.model.RuleCriteria
+import id.rezyfr.quiet.domain.model.TimeCriteria
+import id.rezyfr.quiet.domain.model.getCriteriaTypes
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AddRuleScreenViewModel(
     private val navigator: AppComposeNavigator,
@@ -57,21 +64,6 @@ class AddRuleScreenViewModel(
 
     fun navigateToPickTime() {
         navigator.navigate(QuietScreens.PickTime.route)
-    }
-
-    fun addExtraCriteria(extraCriteria: ExtraCriteria) {
-        _state.update {
-            it.copy(
-                selectedExtraCriteria =
-                it.selectedExtraCriteria.toMutableList().apply {
-                    if (contains(extraCriteria)) {
-                        remove(extraCriteria)
-                    } else {
-                        add(extraCriteria)
-                    }
-                }
-            )
-        }
     }
 
     fun getRecentNotification(pm: PackageManager, packageName: String?) {
@@ -123,37 +115,76 @@ class AddRuleScreenViewModel(
         }
     }
 
-    fun getExtraCriteria() {
-        _state.update { it.copy(extraCriteriaList = ExtraCriteria.DEFAULT) }
+    fun addCriteria(type: CriteriaType) {
+        val newCriteria: RuleCriteria = when (type) {
+            CriteriaType.TIME -> TimeCriteria(mode = "during_schedule", ranges = null)
+            CriteriaType.CALL -> CallCriteria(status = "on_call")
+            CriteriaType.BLUETOOTH -> BluetoothCriteria(mode = "any")
+            CriteriaType.POSTURE -> PostureCriteria(posture = "face_down")
+        }
+
+        _state.update {
+            it.copy(
+                selectedCriteria = it.selectedCriteria + newCriteria
+            )
+        }
     }
 
     fun saveRule() {
-        val state = _state.value
-        val appText = (state.appItem?.label ?: "any app") + " that "
-        val criteria = if (state.criteriaText.isEmpty()) {
-            "contains anything "
-        } else {
-            "contains ${
-                state.criteriaText.fastJoinToString(" or ") {
-                    "\"${it.capitalize()}\""
-                }
-            } "
-        }
-        val actions = "then ${state.action?.title ?: "do nothing"} "
-        val text = "When I get a notification from " + appText + criteria + actions
+        val s = _state.value
+
+        val rule = Rule(
+            id = 0,
+            name = s.appItem?.label ?: "New rule",
+            enabled = true,
+            apps = buildApps(),
+            keywords = buildKeywords(),
+            criteria = buildCriteria(),
+            action = s.action!!.toDomainAction() // conversion below
+        )
+
         viewModelScope.launch {
-            ruleRepository.saveRule(
-                Rule(
-                    packageName = listOf(_state.value.appItem?.packageName ?: ""),
-                    keywords = _state.value.criteriaText,
-                    dayRange = null,
-                    text = text,
-                    action = _state.value.action!!,
-                    enabled = true
-                )
-            )
+            ruleRepository.saveRule(rule)
             navigator.navigateUp()
         }
+    }
+
+    private fun ActionItem.toDomainAction(): RuleAction =
+        when (this.id) {
+            "dismiss_immediate" -> DismissAction(immediately = true, delayMs = null)
+            "dismiss_delay" -> DismissAction(immediately = false, delayMs = null)
+            "cooldown" -> CooldownAction(target = "app", durationMs = 0L)
+            "batch" -> BatchAction(mode = "during_schedule", schedule = null)
+            else -> error("Unknown action type")
+        }
+
+    private fun buildApps(): List<String> =
+        listOfNotNull(_state.value.appItem?.packageName)
+
+    private fun buildKeywords(): List<String> =
+        _state.value.criteriaText.ifEmpty { listOf("") } // empty means "match anything"
+
+    private fun buildCriteria(): List<RuleCriteria> =
+        _state.value.selectedCriteria.map { extra ->
+            when (extra) {
+                is TimeCriteria -> {
+                    TimeCriteria(
+                        mode = "during_schedule",
+                        ranges = extra.ranges
+                    )
+                }
+                is CallCriteria -> {
+                    CallCriteria(status = "on_call")
+                }
+                is BluetoothCriteria -> {
+                    BluetoothCriteria(mode = "any")
+                }
+                else -> error("Unsupported criteria")
+            }
+        }
+
+    fun getAvailableCriteria(): List<CriteriaType> {
+        return getCriteriaTypes(selected = _state.value.selectedCriteria)
     }
 
     data class AddRuleScreenState(
@@ -161,7 +192,6 @@ class AddRuleScreenViewModel(
         val criteriaText: List<String> = emptyList(),
         val action: ActionItem? = null,
         val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),
-        val extraCriteriaList: List<ExtraCriteria> = emptyList(),
-        val selectedExtraCriteria: List<ExtraCriteria> = emptyList(),
+        val selectedCriteria: List<RuleCriteria> = emptyList(),
     )
 }

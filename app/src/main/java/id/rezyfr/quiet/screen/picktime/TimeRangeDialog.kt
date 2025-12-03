@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
+import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingH
@@ -47,12 +48,12 @@ import java.time.DayOfWeek
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeRangeDialog(
-    dayRange: DayRange,
+    timeRange: TimeRange,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
-    var selectedStart by remember { mutableStateOf(dayRange.startMinutes) }
-    var selectedEnd by remember { mutableStateOf(dayRange.endMinutes) }
+    var selectedStart by remember { mutableStateOf(timeRange.startMinutes) }
+    var selectedEnd by remember { mutableStateOf(timeRange.endMinutes) }
     var pickingStart by remember { mutableStateOf(false) }
     var pickingEnd by remember { mutableStateOf(false) }
 
@@ -228,7 +229,7 @@ fun formatMinutes(minuteOfDay: Int): String {
 fun TimePickerDialogPreview() {
     QuietTheme {
         TimeRangeDialog(
-            DayRange(DayOfWeek.SATURDAY, 120, 180),{}, { _, _ -> }
+            TimeRange(DayOfWeek.SATURDAY, 120, 180),{}, { _, _ -> }
         )
     }
 }

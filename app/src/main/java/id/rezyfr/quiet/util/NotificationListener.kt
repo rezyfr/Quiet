@@ -5,11 +5,11 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import id.rezyfr.quiet.data.repository.NotificationRepository
 import id.rezyfr.quiet.data.repository.RuleRepository
-import id.rezyfr.quiet.domain.NotificationModel
-import id.rezyfr.quiet.domain.Rule
-import id.rezyfr.quiet.domain.RuleAction
+import id.rezyfr.quiet.domain.model.BatchAction
+import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.NotificationModel
+import id.rezyfr.quiet.domain.model.Rule
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
@@ -46,7 +46,7 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
         val content = "$title $text".lowercase()
 
         val rules = runBlocking {
-            ruleRepository.getRules(pkg)
+            ruleRepository.getRules()
         }
 
         rules.forEach { rule ->
@@ -109,9 +109,9 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
     }
 
     fun applyAction(rule: Rule, sbn: StatusBarNotification) {
-        when (rule.action.id) {
-            RuleAction.MUTE.toString() -> cancelNotification(sbn.key)
-            RuleAction.BLOCK.toString() -> cancelNotification(sbn.key)
+        when (rule.action) {
+            is CooldownAction -> cancelNotification(sbn.key)
+            is BatchAction -> cancelNotification(sbn.key)
             else -> { /* custom action */ }
         }
     }

@@ -2,7 +2,7 @@ package id.rezyfr.quiet.data.repository
 
 import id.rezyfr.quiet.data.dao.NotificationDao
 import id.rezyfr.quiet.data.entity.NotificationEntity
-import id.rezyfr.quiet.domain.NotificationModel
+import id.rezyfr.quiet.domain.model.NotificationModel
 import kotlinx.coroutines.flow.Flow
 
 class NotificationRepositoryImpl(val notificationDao: NotificationDao) : NotificationRepository {

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
+import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingX
@@ -47,7 +48,7 @@ import java.util.Locale
 fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    var dialogData by remember { mutableStateOf<DayRange?>(null) }
+    var dialogData by remember { mutableStateOf<TimeRange?>(null) }
     PickTimeContent(
         state,
         onPickItemClick = {
@@ -58,7 +59,7 @@ fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
 
     if (dialogData != null) {
         TimeRangeDialog(
-            dayRange = dialogData!!,
+            timeRange = dialogData!!,
             onDismiss = { dialogData = null },
             onConfirm = { start, end ->
                 viewModel.updateTimeRange(dialogData!!.day, start, end)
@@ -71,7 +72,7 @@ fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
 fun PickTimeContent(
     state: PickTimeViewModel.PickTimeState,
     modifier: Modifier = Modifier,
-    onPickItemClick: (DayRange) -> Unit = { },
+    onPickItemClick: (TimeRange) -> Unit = { },
     onPickTimeConfirm: () -> Unit = { }
 ) {
     val buttonText =
@@ -217,13 +218,13 @@ fun PickTimeScreenPreview() {
             PickTimeViewModel.PickTimeState(
                 days =
                 listOf(
-                    DayRange(DayOfWeek.MONDAY, 60, 1200),
-                    DayRange(DayOfWeek.TUESDAY, 0, 0),
-                    DayRange(DayOfWeek.WEDNESDAY, 0, 0),
-                    DayRange(DayOfWeek.THURSDAY, 0, 0),
-                    DayRange(DayOfWeek.FRIDAY, 0, 0),
-                    DayRange(DayOfWeek.SATURDAY, 0, 0),
-                    DayRange(DayOfWeek.SUNDAY, 0, 0)
+                    TimeRange(DayOfWeek.MONDAY, 60, 1200),
+                    TimeRange(DayOfWeek.TUESDAY, 0, 0),
+                    TimeRange(DayOfWeek.WEDNESDAY, 0, 0),
+                    TimeRange(DayOfWeek.THURSDAY, 0, 0),
+                    TimeRange(DayOfWeek.FRIDAY, 0, 0),
+                    TimeRange(DayOfWeek.SATURDAY, 0, 0),
+                    TimeRange(DayOfWeek.SUNDAY, 0, 0)
                 )
             )
         )

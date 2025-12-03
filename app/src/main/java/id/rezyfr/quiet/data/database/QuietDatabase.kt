@@ -8,7 +8,7 @@ import id.rezyfr.quiet.data.dao.NotificationDao
 import id.rezyfr.quiet.data.dao.RuleDao
 import id.rezyfr.quiet.data.entity.NotificationEntity
 import id.rezyfr.quiet.data.entity.RuleEntity
-import id.rezyfr.quiet.screen.picktime.DayRange
+import id.rezyfr.quiet.domain.model.TimeRange
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -32,22 +32,22 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromDayRanges(value: List<DayRange>?): String {
+    fun fromDayRanges(value: List<TimeRange>?): String {
         return Json.encodeToString(value)
     }
 
     @TypeConverter
-    fun toDayRanges(value: String?): List<DayRange>? {
+    fun toDayRanges(value: String?): List<TimeRange>? {
         return Json.decodeFromString(value.orEmpty())
     }
 
     @TypeConverter
-    fun fromDayRange(value: DayRange): String {
+    fun fromDayRange(value: TimeRange): String {
         return Json.encodeToString(value)
     }
 
     @TypeConverter
-    fun toDayRange(value: String): DayRange {
+    fun toDayRange(value: String): TimeRange {
         return Json.decodeFromString(value)
     }
 }

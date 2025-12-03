@@ -1,4 +1,4 @@
-package id.rezyfr.quiet.domain
+package id.rezyfr.quiet.domain.model
 
 data class NotificationModel(
     val sbnKey: String,
