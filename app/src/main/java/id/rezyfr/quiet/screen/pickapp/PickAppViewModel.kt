@@ -60,11 +60,15 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
         }
     }
 
-    fun selectApp(app: AppItem) {
+    fun selectApp(app: AppItem, isSelected: Boolean) {
         _state.update {
             it.copy(
                 selectedApp = it.selectedApp.toMutableList().apply {
-                    add(app)
+                    if (isSelected) {
+                        remove(app)
+                    } else {
+                        add(app)
+                    }
                 }
             )
         }
@@ -105,6 +109,7 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
             resolveInfos
                 .sortedBy { it.loadLabel(pm).toString().lowercase() }
                 .map { info ->
+
                     val label = info.loadLabel(pm).toString()
                     val packageName = info.activityInfo.packageName
                     val icon = info.loadIcon(pm)

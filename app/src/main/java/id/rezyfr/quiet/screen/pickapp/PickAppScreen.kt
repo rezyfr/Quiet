@@ -2,6 +2,9 @@ package id.rezyfr.quiet.screen.pickapp
 
 import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateSizeAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,13 +18,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -71,7 +76,9 @@ fun PickAppScreen(
         allApps = state.filteredApps,
         selectedApp = state.selectedApp,
         isLoading = state.isLoading,
-        onSelectApp = { viewModel.selectApp(it) },
+        onSelectApp = { app, isSelected ->
+            viewModel.selectApp(app, isSelected)
+        },
         onConfirmSelection = { viewModel.pickApp() },
     )
 
@@ -88,7 +95,7 @@ fun PickAppContent(
     allApps: List<AppItem> = listOf(),
     isLoading: Boolean = false,
     selectedApp: List<AppItem> = listOf(),
-    onSelectApp: (AppItem) -> Unit = {},
+    onSelectApp: (AppItem, Boolean) -> Unit = { _, _ -> },
     onPickAllApps: () -> Unit = {},
     onConfirmSelection: () -> Unit = {},
 ) {
@@ -123,84 +130,75 @@ fun PickAppContent(
         Spacer(Modifier.height(spacingXH))
 
         if (isLoading) {
-            // ===== Loading State =====
-            LoadingContent(Modifier.fillMaxWidth().weight(1f))
+            LoadingContent(Modifier.weight(1f).fillMaxWidth())
+        } else {
+            // 🔥 This Box gives FINITE height to the scroll container
+            Box(
+                modifier = Modifier
+                    .weight(1f) // <-- allows scrolling only in this section
+                    .fillMaxWidth()
+            ) {
+                LazyVerticalGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    columns = GridCells.Adaptive(140.dp),
+                    verticalArrangement = Arrangement.spacedBy(spacingX),
+                    horizontalArrangement = Arrangement.spacedBy(spacingX)
+                ) {
+                    // SELECTED APPS
 
-            return@Column
+                    if (selectedApp.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Text(
+                                "Selected",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            )
+                            Spacer(Modifier.height(spacingX))
+                        }
+
+                        items(selectedApp, { it.packageName.plus(".selected") }) { app ->
+                            val isSelected = selectedApp.any { it.packageName == app.packageName }
+                            AppGridItem(
+                                app,
+                                selected = isSelected,
+                                onClick = {
+                                    onSelectApp(app, isSelected)
+                                }
+                            )
+                        }
+
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Spacer(Modifier.height(spacingXH))
+                            HorizontalDivider()
+                        }
+                    }
+
+                    items(allApps, {it.packageName } ) { app ->
+                        val isSelected = selectedApp.any { it.packageName == app.packageName }
+                        AppGridItem(
+                            app = app,
+                            selected = isSelected,
+                            onClick = { onSelectApp(app, isSelected) }
+                        )
+                    }
+                }
+            }
         }
-        // ===== After Loading =====
-        // SELECTED APP SECTION (optional)
-        if (selectedApp.isNotEmpty()) {
-            SelectedAppSection(selectedApp = selectedApp)
-        }
-        // APPS GRID
-        PickAppsGrid(allApps, selectedApp, onSelectApp, Modifier.weight(1f))
 
         Spacer(Modifier.height(spacingXH))
-        // BOTTOM BUTTON
+
         if (selectedApp.isEmpty()) {
             PickButton(label = "Pick all apps", onClick = onPickAllApps)
         } else {
-            PickButton(label = "Pick ${
-                if (selectedApp.size > 1) "these apps" else selectedApp.first().label
-            }", onClick = onConfirmSelection)
-        }
-    }
-}
-
-@Composable
-private fun PickAppsGrid(
-    allApps: List<AppItem>,
-    selectedApp: List<AppItem>,
-    onSelectApp: (AppItem) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 140.dp),
-        verticalArrangement = Arrangement.spacedBy(spacingXX),
-        horizontalArrangement = Arrangement.spacedBy(spacingXX),
-        modifier = modifier,
-    ) {
-        items(allApps) { item ->
-            AppGridItem(
-                app = item,
-                selected = selectedApp.any{it.packageName == item.packageName},
-                onClick = { onSelectApp(item) },
+            PickButton(
+                label = "Pick ${
+                    if (selectedApp.size > 1) "these apps" else selectedApp.first().label
+                }",
+                onClick = onConfirmSelection
             )
         }
     }
-}
-
-@Composable
-private fun SelectedAppSection(
-    modifier: Modifier = Modifier,
-    selectedApp: List<AppItem>
-) {
-    Text(
-        "Selected",
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
-
-    Spacer(Modifier.height(10.dp))
-
-    Box(Modifier.padding(end = spacingXX)) {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            verticalArrangement = Arrangement.spacedBy(spacingXX),
-            horizontalArrangement = Arrangement.spacedBy(spacingXX),
-            modifier = modifier,
-        ) {
-            items(selectedApp) { app ->
-                AppGridItem(app = app, selected = true, onClick = {})
-            }
-        }
-    }
-
-    Spacer(Modifier.height(spacingXH))
-
-    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-    Spacer(Modifier.height(spacingXH))
 }
 
 @Composable
@@ -221,12 +219,11 @@ fun AppGridItem(
     selected: Boolean = false,
     onClick: () -> Unit = {},
 ) {
-    val background =
-        if (selected) {
-            MaterialTheme.colorScheme.onBackground
-        } else {
-            MaterialTheme.colorScheme.surface
-        }
+    val animatedBackgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(durationMillis = 500)
+    )
+
     val textColor =
         if (selected) {
             MaterialTheme.colorScheme.surface
@@ -234,21 +231,33 @@ fun AppGridItem(
             MaterialTheme.colorScheme.onSurface
         }
 
+    val animatedSize by animateSizeAsState(
+        targetValue = if (selected) Size(36f, 36f) else Size(24f, 24f),
+        animationSpec = tween(durationMillis = 300)
+    )
+
     Surface(
         shape = RoundedCornerShape(spacingXX),
-        color = background,
-        modifier = modifier.fillMaxWidth(0.5f).aspectRatio(1.2f).clickable(onClick = onClick),
+        color = animatedBackgroundColor,
+        modifier = modifier
+            .fillMaxWidth(0.5f)
+            .aspectRatio(1.5f)
+            .clickable(onClick = {
+                onClick.invoke()
+            }),
     ) {
         Column(
             Modifier.padding(spacingXX),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
         ) {
             Icon(
                 painter = rememberDrawablePainter(app.icon),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(
+                    animatedSize.height.dp, animatedSize.width.dp
+                ),
             )
 
             Spacer(Modifier.height(spacingH))

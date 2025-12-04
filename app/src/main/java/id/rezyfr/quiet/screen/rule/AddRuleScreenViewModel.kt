@@ -38,10 +38,8 @@ class AddRuleScreenViewModel(
     private val _state = MutableStateFlow(AddRuleScreenState())
     val state = _state.asStateFlow()
 
-    fun setAppItem(appItem: List<AppItem>) {
-        _state.update { it.copy(selectedApps = it.selectedApps.toMutableList().apply {
-            addAll(appItem)
-        }) }
+    fun setAppItem(appItems: List<AppItem>) {
+        _state.update { it.copy(selectedApps = appItems) }
     }
 
     fun setCriteria(criteria: List<String>) {
