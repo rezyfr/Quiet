@@ -1,5 +1,6 @@
 package id.rezyfr.quiet.screen.rule
 
+import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -84,22 +86,18 @@ fun AddRuleScreen(
     val context = LocalContext.current
     val pm = context.packageManager
     val backStackEntry = navController.currentBackStackEntryAsState().value
-    val appPackageName = backStackEntry?.savedStateHandle?.get<String>("key_pick_apps")
+    val appPackageName = backStackEntry?.savedStateHandle?.get<List<String>>("key_pick_apps")
+    val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
     val pickedApp = remember(appPackageName) { getAppItem(pm, appPackageName.orEmpty()) }
     var showCriteriaPicker by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        viewModel.getRecentNotification(pm, null)
-    }
+    val actionString = backStackEntry?.savedStateHandle?.get<String>("key_pick_actions")
 
     LaunchedEffect(appPackageName) {
         if (appPackageName != null) {
-            backStackEntry.savedStateHandle.remove<String>("key_pick_apps")
+            backStackEntry.savedStateHandle.remove<List<String>>("key_pick_apps")
             viewModel.setAppItem(pickedApp)
-            viewModel.getRecentNotification(pm, pickedApp?.packageName)
         }
     }
-    val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
 
     LaunchedEffect(criteria) {
         if (criteria != null) {
@@ -107,7 +105,10 @@ fun AddRuleScreen(
             viewModel.setCriteria(criteria)
         }
     }
-    val actionString = backStackEntry?.savedStateHandle?.get<String>("key_pick_actions")
+
+    LaunchedEffect(appPackageName, criteria) {
+        viewModel.getRecentNotification(pm)
+    }
 
     LaunchedEffect(actionString) {
         if (actionString != null) {
@@ -168,9 +169,14 @@ fun AddRuleContent(
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(spacingX),
+        modifier = modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(spacingX),
         contentPadding = PaddingValues(bottom = spacingXX),
     ) {
+        item { 
+            Spacer(Modifier.height(spacingX))
+        }
         // ----- HEADER -----
         item {
             RuleEditorHeader(
@@ -221,20 +227,40 @@ fun RuleEditorHeader(
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
     onActionClick: () -> Unit = {}
 ) {
-    val appText = state.appItem?.label ?: "any app"
+    val appText = if (state.selectedApps.size == 1) {
+            state.selectedApps.first().label
+        } else if (state.selectedApps.isEmpty()) {
+            "any app"
+        } else {
+            state.selectedApps.joinToString(" or ") {
+                it.label
+            }
+        }
+
     val containsText = if (state.criteriaText.isEmpty()) {
         "contains anything"
     } else {
         "contains " + state.criteriaText.joinToString(" or ") { "\"${it.capitalize()}\"" }
     }
 
+    val inlineContent = mutableMapOf(
+        "plus" to inlinePlus {},
+    ).apply {
+        if (state.selectedApps.size == 1) {
+            put("app_icon", inlineAppIcon(state.selectedApps.first().icon))
+        }
+    }
+
     ExtendedSpansText(
         modifier = modifier.padding(vertical = 16.dp),
-        inlineContent = mapOf("plus" to inlinePlus {}),
+        inlineContent = inlineContent,
         bottomOffset = 8.sp,
         lineHeight = 60.sp,
         text = buildAnnotatedString {
             append(stringResource(R.string.rule_when_notification))
+            if (state.selectedApps.size == 1) {
+                appendInlineContent("app_icon", "icon")
+            }
             withSquiggly(" $appText", onAppClick)
             append(" that ")
             withSquiggly(containsText, onCriteriaClick)
@@ -286,7 +312,9 @@ fun RecentMatchingEmptySection(modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)) {
         Text(
             text = stringResource(R.string.rule_recent_matching_notifications),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground
+            ),
             fontWeight = FontWeight.SemiBold,
         )
 
@@ -448,6 +476,24 @@ fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onC
 }
 
 @Composable
+fun inlineAppIcon(icon: Drawable?) : InlineTextContent {
+    return InlineTextContent(
+        placeholder = Placeholder(
+            height = 22.sp, // roughly width of the word
+            width = 22.sp,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+        )
+    ) {
+        Icon(
+            painter = rememberDrawablePainter(icon),
+            contentDescription = null,
+            tint = Color.Unspecified, // show original icon color
+            modifier = Modifier.size(22.dp).clip(CircleShape),
+        )
+    }
+}
+
+@Composable
 fun inlinePlus(onClick: () -> Unit): InlineTextContent {
     return InlineTextContent(
         placeholder = Placeholder(
@@ -497,15 +543,15 @@ private fun AddRuleFilledPreview() {
         AddRuleContent(
             state =
             AddRuleScreenViewModel.AddRuleScreenState(
-                appItem =
-                AppItem(
+                selectedApps =
+                listOf(AppItem(
                     label = "Microsoft Teams",
                     packageName = "com.microsoft.teams",
                     icon =
                     AppCompatResources.getDrawable(
                         context, R.drawable.ic_launcher_foreground
                     )!!,
-                ),
+                )),
                 criteriaText = listOf("meeting", "call"),
                 selectedCriteria = listOf(TimeCriteria("anytime", null)),
                 action = null,
@@ -522,15 +568,15 @@ private fun AddRuleFilledWithRecentPreview() {
         AddRuleContent(
             state =
             AddRuleScreenViewModel.AddRuleScreenState(
-                appItem =
-                AppItem(
+                selectedApps =
+                listOf(AppItem(
                     label = "Microsoft Teams",
                     packageName = "com.microsoft.teams",
                     icon =
                     AppCompatResources.getDrawable(
                         context, R.drawable.ic_launcher_foreground
                     )!!,
-                ),
+                )),
                 criteriaText = listOf("meeting", "call"),
                 action = null,
                 notificationList =

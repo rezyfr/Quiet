@@ -28,6 +28,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,9 +61,16 @@ import id.rezyfr.quiet.util.drawable
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun CriteriaScreen(viewModel: CriteriaViewModel = koinViewModel()) {
+fun CriteriaScreen(
+    viewModel: CriteriaViewModel = koinViewModel(),
+    phrases: List<String> = listOf()
+) {
     var showPhraseDialog by remember { mutableStateOf(false) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.setPhrases(phrases)
+    }
 
     if (showPhraseDialog) {
         PhraseDialog(

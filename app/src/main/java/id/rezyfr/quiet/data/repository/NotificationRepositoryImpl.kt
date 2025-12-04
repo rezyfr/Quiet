@@ -22,7 +22,12 @@ class NotificationRepositoryImpl(val notificationDao: NotificationDao) : Notific
         )
     }
 
-    override fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>> {
-        return notificationDao.getRecentNotifications(packageName)
+    override fun getRecentNotifications(packageName: List<String>, phrases: List<String>): Flow<List<NotificationEntity>> {
+        return notificationDao.getRecentNotifications(
+            packageName,
+            packageName.isEmpty(),
+            phrases.joinToString(" "),
+            phrases.isNotEmpty()
+        )
     }
 }

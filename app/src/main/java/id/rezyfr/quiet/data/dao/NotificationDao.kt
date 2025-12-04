@@ -18,11 +18,24 @@ interface NotificationDao {
     @Query(
         """
     SELECT * FROM notificationentity
-    WHERE (:packageName IS NULL OR packageName = :packageName)
-    ORDER BY postTime DESC LIMIT 10
-"""
+    WHERE 
+        (:isEmpty = 1 OR packageName IN (:packages))
+        AND (
+            :hasPhrases = 0 OR (
+                title LIKE '%' || :phrase || '%' 
+                OR text LIKE '%' || :phrase || '%'
+            )
+        )
+    ORDER BY postTime DESC
+    LIMIT 10
+    """
     )
-    fun getRecentNotifications(packageName: String?): Flow<List<NotificationEntity>>
+    fun getRecentNotifications(
+        packages: List<String>,
+        isEmpty: Boolean,
+        phrase: String?,    // <— merged into one search string
+        hasPhrases: Boolean // <— is phrase empty?
+    ): Flow<List<NotificationEntity>>
 
     @Query(
         "DELETE FROM notificationentity where sbnKey NOT IN (SELECT sbnKey from notificationentity ORDER BY sbnKey DESC LIMIT 30)"

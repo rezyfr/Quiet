@@ -59,7 +59,10 @@ import id.rezyfr.quiet.ui.theme.spacingXX
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PickAppScreen(viewModel: PickAppViewModel = koinViewModel()) {
+fun PickAppScreen(
+    pickedApps: List<String> = listOf(),
+    viewModel: PickAppViewModel = koinViewModel()
+) {
     val pm = LocalContext.current.packageManager
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -72,7 +75,10 @@ fun PickAppScreen(viewModel: PickAppViewModel = koinViewModel()) {
         onConfirmSelection = { viewModel.pickApp() },
     )
 
-    LaunchedEffect(Unit) { viewModel.getInstalledApps(pm) }
+    LaunchedEffect(Unit) {
+        viewModel.setPickedApps(pickedApps, pm)
+        viewModel.getInstalledApps(pm)
+    }
 }
 
 @Composable
@@ -81,7 +87,7 @@ fun PickAppContent(
     onQueryChange: (String) -> Unit = {},
     allApps: List<AppItem> = listOf(),
     isLoading: Boolean = false,
-    selectedApp: AppItem? = null,
+    selectedApp: List<AppItem> = listOf(),
     onSelectApp: (AppItem) -> Unit = {},
     onPickAllApps: () -> Unit = {},
     onConfirmSelection: () -> Unit = {},
@@ -124,18 +130,20 @@ fun PickAppContent(
         }
         // ===== After Loading =====
         // SELECTED APP SECTION (optional)
-        if (selectedApp != null) {
-            SelectedAppSection(selectedApp)
+        if (selectedApp.isNotEmpty()) {
+            SelectedAppSection(selectedApp = selectedApp)
         }
         // APPS GRID
         PickAppsGrid(allApps, selectedApp, onSelectApp, Modifier.weight(1f))
 
         Spacer(Modifier.height(spacingXH))
         // BOTTOM BUTTON
-        if (selectedApp == null) {
+        if (selectedApp.isEmpty()) {
             PickButton(label = "Pick all apps", onClick = onPickAllApps)
         } else {
-            PickButton(label = "Pick ${selectedApp.label}", onClick = onConfirmSelection)
+            PickButton(label = "Pick ${
+                if (selectedApp.size > 1) "these apps" else selectedApp.first().label
+            }", onClick = onConfirmSelection)
         }
     }
 }
@@ -143,7 +151,7 @@ fun PickAppContent(
 @Composable
 private fun PickAppsGrid(
     allApps: List<AppItem>,
-    selectedApp: AppItem?,
+    selectedApp: List<AppItem>,
     onSelectApp: (AppItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -156,7 +164,7 @@ private fun PickAppsGrid(
         items(allApps) { item ->
             AppGridItem(
                 app = item,
-                selected = selectedApp?.packageName == item.packageName,
+                selected = selectedApp.any{it.packageName == item.packageName},
                 onClick = { onSelectApp(item) },
             )
         }
@@ -164,7 +172,10 @@ private fun PickAppsGrid(
 }
 
 @Composable
-private fun SelectedAppSection(selectedApp: AppItem) {
+private fun SelectedAppSection(
+    modifier: Modifier = Modifier,
+    selectedApp: List<AppItem>
+) {
     Text(
         "Selected",
         style = MaterialTheme.typography.titleMedium,
@@ -174,7 +185,16 @@ private fun SelectedAppSection(selectedApp: AppItem) {
     Spacer(Modifier.height(10.dp))
 
     Box(Modifier.padding(end = spacingXX)) {
-        AppGridItem(app = selectedApp, selected = true, onClick = {})
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 140.dp),
+            verticalArrangement = Arrangement.spacedBy(spacingXX),
+            horizontalArrangement = Arrangement.spacedBy(spacingXX),
+            modifier = modifier,
+        ) {
+            items(selectedApp) { app ->
+                AppGridItem(app = app, selected = true, onClick = {})
+            }
+        }
     }
 
     Spacer(Modifier.height(spacingXH))
@@ -332,7 +352,7 @@ private fun PreviewPickAppSelectedContent() {
         )
     QuietTheme {
         PickAppContent(
-            selectedApp = selected,
+            selectedApp = listOf(selected),
             allApps =
             listOf(
                 selected,

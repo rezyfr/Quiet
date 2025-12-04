@@ -38,8 +38,10 @@ class AddRuleScreenViewModel(
     private val _state = MutableStateFlow(AddRuleScreenState())
     val state = _state.asStateFlow()
 
-    fun setAppItem(appItem: AppItem?) {
-        _state.update { it.copy(appItem = appItem) }
+    fun setAppItem(appItem: List<AppItem>) {
+        _state.update { it.copy(selectedApps = it.selectedApps.toMutableList().apply {
+            addAll(appItem)
+        }) }
     }
 
     fun setCriteria(criteria: List<String>) {
@@ -51,11 +53,15 @@ class AddRuleScreenViewModel(
     }
 
     fun navigateToPickApp() {
-        navigator.navigate(QuietScreens.PickApp.route)
+        val pickedApps = _state.value.selectedApps.map { it.packageName }
+        navigator.navigate(
+            QuietScreens.PickApp.createRoute(pickedApps)
+        )
     }
 
     fun navigateToPickCriteria() {
-        navigator.navigate(QuietScreens.Criteria.route)
+        val selectedCriteria = _state.value.criteriaText
+        navigator.navigate(QuietScreens.Criteria.createRoute(selectedCriteria))
     }
 
     fun navigateToPickAction() {
@@ -66,9 +72,14 @@ class AddRuleScreenViewModel(
         navigator.navigate(QuietScreens.PickTime.route)
     }
 
-    fun getRecentNotification(pm: PackageManager, packageName: String?) {
+    fun getRecentNotification(
+        pm: PackageManager
+    ) {
+        val packageName = _state.value.selectedApps.map { it.packageName }
+        val phrases = _state.value.criteriaText
+
         viewModelScope.launch {
-            repository.getRecentNotifications(packageName).collect { notifEntity ->
+            repository.getRecentNotifications(packageName, phrases).collect { notifEntity ->
                 _state.update {
                     it.copy(
                         notificationList =
@@ -135,7 +146,7 @@ class AddRuleScreenViewModel(
 
         val rule = Rule(
             id = 0,
-            name = s.appItem?.label ?: "New rule",
+            name = "",
             enabled = true,
             apps = buildApps(),
             keywords = buildKeywords(),
@@ -159,7 +170,7 @@ class AddRuleScreenViewModel(
         }
 
     private fun buildApps(): List<String> =
-        listOfNotNull(_state.value.appItem?.packageName)
+        _state.value.selectedApps.map { it.packageName }
 
     private fun buildKeywords(): List<String> =
         _state.value.criteriaText.ifEmpty { listOf("") } // empty means "match anything"
@@ -188,7 +199,7 @@ class AddRuleScreenViewModel(
     }
 
     data class AddRuleScreenState(
-        val appItem: AppItem? = null,
+        val selectedApps: List<AppItem> = listOf(),
         val criteriaText: List<String> = emptyList(),
         val action: ActionItem? = null,
         val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),

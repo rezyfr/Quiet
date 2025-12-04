@@ -29,5 +29,9 @@ class CriteriaViewModel(private val navigator: AppComposeNavigator) : ViewModel(
         _state.update { it.copy(phrase = it.phrase - phrase) }
     }
 
+    fun setPhrases(phrases: List<String>) {
+        _state.update { it.copy(phrase = phrases) }
+    }
+
     data class State(val phrase: List<String> = emptyList())
 }

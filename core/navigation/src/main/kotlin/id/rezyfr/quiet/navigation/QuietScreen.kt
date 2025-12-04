@@ -1,8 +1,11 @@
 package id.rezyfr.quiet.navigation
 
+import android.net.Uri
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 sealed class QuietScreens(
     val route: String,
@@ -17,27 +20,42 @@ sealed class QuietScreens(
 
     data object AddRules : QuietScreens("add_rules")
 
-    data object PickApp : QuietScreens("pick_app")
+    data object PickApp : QuietScreens(
+        route = "pick_app",
+        navArguments = listOf(
+            navArgument("key_picked_apps") {
+                type = NavType.StringType
+                defaultValue = "[]"
+            }
+        )
+    ) {
+        const val KEY_PICKED_APPS = "key_picked_apps"
 
-    data object Criteria : QuietScreens("criteria")
+        fun createRoute(pickedApps: List<String>): String {
+            val json = Json.encodeToString(pickedApps)
+            return "pick_app?key_picked_apps=${Uri.encode(json)}"
+        }
+    }
+
+    data object Criteria : QuietScreens(
+        route = "criteria",
+        navArguments = listOf(
+            navArgument("key_picked_criteria") {
+                type = NavType.StringType
+                defaultValue = "[]"
+            }
+        )
+    ) {
+        const val KEY_CRITERIA = "key_picked_criteria"
+        fun createRoute(pickedCriteria: List<String>): String {
+            val json = Json.encodeToString(pickedCriteria)
+            return "criteria?key_picked_criteria=${Uri.encode(json)}"
+        }
+    }
 
     data object Action : QuietScreens("actions")
 
     data object PickTime : QuietScreens("pick_time")
-
-    // example screen
-    data object Example :
-        QuietScreens(
-            route = "example",
-            navArguments =
-                listOf(
-                    navArgument("exampleId") { type = NavType.StringType }
-                    /** navArgument("user") { type = WhatsAppUserType() nullable = false } * */
-                    ),
-        ) {
-        fun createRoute(channelId: String) =
-            name.replace("{${navArguments.first().name}}", channelId)
-    }
 }
 
 private fun String.appendArguments(navArguments: List<NamedNavArgument>): String {

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
+import id.rezyfr.quiet.util.getAppItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,13 +61,29 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
     }
 
     fun selectApp(app: AppItem) {
-        _state.update { it.copy(selectedApp = app) }
+        _state.update {
+            it.copy(
+                selectedApp = it.selectedApp.toMutableList().apply {
+                    add(app)
+                }
+            )
+        }
+    }
+
+    fun setPickedApps(pickedApps: List<String>, pm: PackageManager) {
+        _state.update {
+            it.copy(
+                selectedApp = getAppItem(pm, pickedApps)
+            )
+        }
     }
 
     fun pickApp() {
         navigator.navigateBackWithResult(
             "key_pick_apps",
-            _state.value.selectedApp?.packageName,
+            _state.value.selectedApp.map {
+                it.packageName
+            },
             QuietScreens.AddRules.route,
         )
     }
@@ -75,7 +92,7 @@ class PickAppViewModel(private val navigator: AppComposeNavigator) : ViewModel()
         val isLoading: Boolean = true,
         val allApps: List<AppItem> = emptyList(),
         val filteredApps: List<AppItem> = emptyList(),
-        val selectedApp: AppItem? = null,
+        val selectedApp: List<AppItem> = emptyList(),
         val searchQuery: String = "",
     )
 
