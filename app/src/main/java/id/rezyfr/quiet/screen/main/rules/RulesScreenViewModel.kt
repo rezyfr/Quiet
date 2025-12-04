@@ -28,6 +28,12 @@ class RulesScreenViewModel(private val navigator: AppComposeNavigator, private v
         }
     }
 
+    fun toggleRules(rule: Rule) {
+        viewModelScope.launch {
+            rulesRepository.updateRule(rule.copy(enabled = !rule.enabled))
+        }
+    }
+
     data class RulesScreenState(
         val rules: ViewState<List<Rule>> = ViewState.Empty
     )

@@ -1,5 +1,6 @@
 package id.rezyfr.quiet.data.repository
 
+import android.R.attr.enabled
 import id.rezyfr.quiet.data.dao.RuleDao
 import id.rezyfr.quiet.domain.mapper.toDomain
 import id.rezyfr.quiet.domain.mapper.toEntity

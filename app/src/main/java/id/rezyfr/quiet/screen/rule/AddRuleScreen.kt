@@ -174,7 +174,7 @@ fun AddRuleContent(
             .padding(spacingX),
         contentPadding = PaddingValues(bottom = spacingXX),
     ) {
-        item { 
+        item {
             Spacer(Modifier.height(spacingX))
         }
         // ----- HEADER -----
@@ -228,14 +228,14 @@ fun RuleEditorHeader(
     onActionClick: () -> Unit = {}
 ) {
     val appText = if (state.selectedApps.size == 1) {
-            state.selectedApps.first().label
-        } else if (state.selectedApps.isEmpty()) {
-            "any app"
-        } else {
-            state.selectedApps.joinToString(" or ") {
-                it.label
-            }
+        state.selectedApps.first().label
+    } else if (state.selectedApps.isEmpty()) {
+        "any app"
+    } else {
+        state.selectedApps.joinToString(" or ") {
+            it.label
         }
+    }
 
     val containsText = if (state.criteriaText.isEmpty()) {
         "contains anything"
@@ -476,7 +476,7 @@ fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onC
 }
 
 @Composable
-fun inlineAppIcon(icon: Drawable?) : InlineTextContent {
+fun inlineAppIcon(icon: Drawable?): InlineTextContent {
     return InlineTextContent(
         placeholder = Placeholder(
             height = 22.sp, // roughly width of the word
@@ -544,14 +544,16 @@ private fun AddRuleFilledPreview() {
             state =
             AddRuleScreenViewModel.AddRuleScreenState(
                 selectedApps =
-                listOf(AppItem(
-                    label = "Microsoft Teams",
-                    packageName = "com.microsoft.teams",
-                    icon =
-                    AppCompatResources.getDrawable(
-                        context, R.drawable.ic_launcher_foreground
-                    )!!,
-                )),
+                listOf(
+                    AppItem(
+                        label = "Microsoft Teams",
+                        packageName = "com.microsoft.teams",
+                        icon =
+                        AppCompatResources.getDrawable(
+                            context, R.drawable.ic_launcher_foreground
+                        )!!,
+                    )
+                ),
                 criteriaText = listOf("meeting", "call"),
                 selectedCriteria = listOf(TimeCriteria("anytime", null)),
                 action = null,
@@ -569,14 +571,16 @@ private fun AddRuleFilledWithRecentPreview() {
             state =
             AddRuleScreenViewModel.AddRuleScreenState(
                 selectedApps =
-                listOf(AppItem(
-                    label = "Microsoft Teams",
-                    packageName = "com.microsoft.teams",
-                    icon =
-                    AppCompatResources.getDrawable(
-                        context, R.drawable.ic_launcher_foreground
-                    )!!,
-                )),
+                listOf(
+                    AppItem(
+                        label = "Microsoft Teams",
+                        packageName = "com.microsoft.teams",
+                        icon =
+                        AppCompatResources.getDrawable(
+                            context, R.drawable.ic_launcher_foreground
+                        )!!,
+                    )
+                ),
                 criteriaText = listOf("meeting", "call"),
                 action = null,
                 notificationList =
