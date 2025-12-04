@@ -1,5 +1,6 @@
 package id.rezyfr.quiet.ui.theme
 
+import android.R.attr.type
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -10,6 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import id.rezyfr.quiet.domain.model.AttentionAction
+import id.rezyfr.quiet.domain.model.DelayAction
+import id.rezyfr.quiet.domain.model.RuleAction
+import id.rezyfr.quiet.domain.model.SilenceAction
 
 private val DarkBackground = Color(0xFF0a0b0d) // near-black
 private val DarkCard = Color(0xFF1a1c21) // slightly lighter for cards
@@ -33,7 +38,6 @@ val DismissContent = Color(0xFF4b3528)
 val DismissBackground = YellowPrimary
 
 
-
 private val DarkColorScheme =
     darkColorScheme(
         primary = YellowPrimary,
@@ -49,6 +53,7 @@ private val DarkColorScheme =
         surfaceVariant = DarkCard,
         onSurfaceVariant = TextSecondary,
         tertiaryContainer = TextFieldBackground,
+        onTertiaryContainer = TextPrimary,
         outline = Color(0xFF3A3A3A),
     )
 

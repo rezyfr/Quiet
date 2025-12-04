@@ -1,5 +1,8 @@
 package id.rezyfr.quiet.screen.main.rules
 
+import android.R.attr.fontWeight
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -30,12 +34,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +53,7 @@ import id.rezyfr.quiet.R
 import id.rezyfr.quiet.domain.model.CallCriteria
 import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.Rule
+import id.rezyfr.quiet.domain.model.getColor
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
@@ -65,7 +73,10 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
     RulesContent(
         modifier,
         state = state,
-        onCreateRuleClick = viewModel::navigateToAddRules
+        onCreateRuleClick = viewModel::navigateToAddRules,
+        onToggle = {
+            viewModel.toggleRules(it)
+        }
     )
 
     LaunchedEffect(Unit) {
@@ -77,12 +88,13 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
 fun RulesContent(
     modifier: Modifier = Modifier,
     onCreateRuleClick: () -> Unit = {},
+    onToggle: (Rule) -> Unit,
     state: RulesScreenViewModel.RulesScreenState
 ) {
     if (state.rules is ViewState.Empty) {
         RulesEmptyContent(modifier, onCreateRuleClick)
     } else if (state.rules is ViewState.Success) {
-        RulesMainContent(modifier, onCreateRuleClick = onCreateRuleClick, rules = state.rules.data!!)
+        RulesMainContent(modifier, onCreateRuleClick = onCreateRuleClick, rules = state.rules.data!!, onRuleToggleClick = onToggle)
     }
 }
 
@@ -175,15 +187,20 @@ fun RuleItemContent(
     onClick: () -> Unit,
     onMenuClick: () -> Unit,
 ) {
+    val color = getColor(rule.action)
+    val animatedBackgroundColor by animateColorAsState(
+        targetValue = if (rule.enabled) color.second else MaterialTheme.colorScheme.tertiaryContainer,
+        animationSpec = tween(durationMillis = 500)
+    )
     Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        color = animatedBackgroundColor,
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
     ) {
         Column(
-            modifier = Modifier.padding(spacingX)
+            modifier = Modifier.padding(spacingSmall)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -194,37 +211,36 @@ fun RuleItemContent(
                     Icon(
                         Icons.Default.MoreVert,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Enabled",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        text = if (rule.enabled) "Enabled" else "Disabled",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
                     )
-                    Spacer(Modifier.width(spacingSmall))
                     Switch(
                         checked = rule.enabled,
-                        onCheckedChange = onToggle
+                        onCheckedChange = onToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onBackground,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            checkedTrackColor = MaterialTheme.colorScheme.background,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.background,
+                        ),
+                        modifier = Modifier.scale(0.5f),
                     )
                 }
             }
 
-            Spacer(Modifier.height(spacingX))
-
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f),
+                color = MaterialTheme.colorScheme.background,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = rule.describe(),  // e.g. "When I get a notification from Gmail during schedule then mute"
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(spacingX)
-                )
+                rule.describe(Modifier.padding(spacingX), rule.enabled, LocalContext.current.packageManager)  // e.g. "When I get a notification from Gmail during schedule then mute
             }
         }
     }
