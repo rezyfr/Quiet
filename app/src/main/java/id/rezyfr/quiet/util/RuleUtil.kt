@@ -131,7 +131,7 @@ fun AnimatedStrikethroughText(
     BasicText(
         inlineContent = inlineContent,
         text = textToDisplay,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground),
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground),
         modifier = modifier
     )
 }
@@ -143,7 +143,7 @@ private fun AnnotatedString.buildStrikethrough(length: Int, style: SpanStyle) = 
 }
 
 fun RuleCriteria.describe(): String = when (this) {
-    is TimeCriteria -> if (ranges == null) "any time" else "during schedule"
+    is TimeCriteria -> if (ranges == null) "at any time" else "during schedule"
     is CallCriteria -> if (status == "on_call") "I'm on a call" else "I'm not on a call"
     is BluetoothCriteria ->
         if (mode == "any") {

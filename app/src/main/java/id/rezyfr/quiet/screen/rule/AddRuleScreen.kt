@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
@@ -25,7 +24,6 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,7 +56,6 @@ import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
-import id.rezyfr.quiet.domain.model.CriteriaType
 import id.rezyfr.quiet.domain.model.NotificationUiModel
 import id.rezyfr.quiet.domain.model.PostureCriteria
 import id.rezyfr.quiet.domain.model.RuleCriteria
@@ -185,6 +182,7 @@ fun AddRuleContent(
                 onCriteriaClick = onCriteriaClick,
                 onActionClick = onActionClick,
                 onAddExtraCriteriaClick = onAddExtraCriteriaClick,
+                onExtraCriteriaClick = onExtraCriteriaClick
             )
         }
 
@@ -273,7 +271,8 @@ fun RuleEditorHeader(
                         append(" and")
                     }
                     Row {
-                        withSquiggly(" ${criteria.describe()}") {
+                        append(" ")
+                        withSquiggly("${criteria.describe()}") {
                             onExtraCriteriaClick.invoke(criteria)
                         }
                         if (index == state.selectedCriteria.lastIndex) {
@@ -422,58 +421,6 @@ fun RecentNotificationCard(
     }
 }
 
-@Composable
-fun ExtraCriteriaBottomSheet(
-    modifier: Modifier = Modifier,
-    items: List<CriteriaType>,
-    onItemClick: (CriteriaType) -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(
-        modifier = modifier,
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-    ) {
-        ExtraCriteriaBottomSheetContent(
-            modifier =
-            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
-            items = items,
-            onItemClick = onItemClick
-        )
-    }
-}
-
-@Composable
-fun ExtraCriteriaBottomSheetContent(
-    modifier: Modifier = Modifier,
-    items: List<CriteriaType> = listOf(),
-    onItemClick: (CriteriaType) -> Unit = {}
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxWidth().padding(horizontal = spacingXX, vertical = spacingXX)
-    ) {
-        items(items) { item ->
-            ExtraCriteriaItem(criteria = item, onClick = { onItemClick(item) })
-            Spacer(Modifier.height(spacingX))
-        }
-    }
-}
-
-@Composable
-fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onClick: () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
-    ) {
-        Text(
-            text = "filter by ${criteria.value}",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = spacingX, vertical = spacing)
-        )
-    }
-}
 
 @Composable
 fun inlineAppIcon(icon: Drawable?): InlineTextContent {

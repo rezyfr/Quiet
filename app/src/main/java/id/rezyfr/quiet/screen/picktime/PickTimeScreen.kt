@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,10 +37,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
+import id.rezyfr.quiet.component.SecondaryButton
 import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingX
+import id.rezyfr.quiet.ui.theme.spacingXX
 import org.koin.androidx.compose.koinViewModel
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -54,7 +58,9 @@ fun PickTimeScreen(viewModel: PickTimeViewModel = koinViewModel()) {
         onPickItemClick = {
             dialogData = it
         },
-        onPickTimeConfirm = viewModel::pickTime
+        onPickTimeConfirm = viewModel::pickTime,
+        onResetClick = viewModel::reset,
+        onApplyToAllClick = viewModel::applyToAll
     )
 
     if (dialogData != null) {
@@ -73,7 +79,9 @@ fun PickTimeContent(
     state: PickTimeViewModel.PickTimeState,
     modifier: Modifier = Modifier,
     onPickItemClick: (TimeRange) -> Unit = { },
-    onPickTimeConfirm: () -> Unit = { }
+    onPickTimeConfirm: () -> Unit = { },
+    onResetClick: (DayOfWeek) -> Unit = {},
+    onApplyToAllClick: (startMinutes: Int, endMinutes: Int) -> Unit = {_, _ -> }
 ) {
     val buttonText =
         if (state.isModified) {
@@ -111,7 +119,7 @@ fun PickTimeContent(
     ) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(spacingX),
-            modifier = Modifier.padding(it)
+            modifier = Modifier.padding(vertical = spacingXX, horizontal = spacingX)
         ) {
             items(state.days) { time ->
                 PickTimeItem(
@@ -121,36 +129,82 @@ fun PickTimeContent(
                         }
                     ),
                     day = time.day.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                    time.startMinutes,
-                    time.endMinutes,
+                    onResetClick = {
+                        onResetClick.invoke(time.day)
+                    },
+                    onApplyToAllClick = {
+                        onApplyToAllClick.invoke(time.startMinutes, time.endMinutes)
+                    },
+                    startMinutes = time.startMinutes,
+                    endMinutes = time.endMinutes,
                 )
             }
         }
     }
 }
+
 @Composable
 fun PickTimeItem(
     modifier: Modifier = Modifier,
     day: String = "Monday",
     startMinutes: Int = 0,
     endMinutes: Int = 1440,
+    onApplyToAllClick : () -> Unit = {},
+    onResetClick : () -> Unit = {}
 ) {
+    var expanded by remember { mutableStateOf(false) }
     val totalMinutes = 1440.toFloat()
     val startWeight: Float = startMinutes / totalMinutes
     val selectedWeight = (endMinutes - startMinutes).toFloat() / totalMinutes
     val endWeight: Float = 1f - (startWeight + selectedWeight)
 
     Column(modifier.background(color = MaterialTheme.colorScheme.background)) {
-        Text(
-            text = day,
-            style =
-            MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onBackground
-            ),
-            fontWeight = FontWeight.Bold
-        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,) {
+            Text(
+                text = day,
+                style =
+                MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onBackground
+                ),
+                fontWeight = FontWeight.Bold
+            )
+            Box {
+
+                SecondaryButton(
+                    text = stringResource(R.string.options),
+                    modifier = Modifier,
+                    onClick = {
+                        expanded = true
+                    }
+                )
+                DropdownMenu(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.apply_to_all)) },
+                        onClick = {
+                            onApplyToAllClick.invoke()
+                            expanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.reset)) },
+                        onClick = {
+                            onResetClick.invoke()
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(spacingX))
-        TimeRangeBar(startWeight, selectedWeight, endWeight)
+        if (startMinutes == 0 && endMinutes == 0) {
+            EmptyTimeRangeBar()
+        } else {
+            TimeRangeBar(startWeight, selectedWeight, endWeight)
+        }
         Spacer(Modifier.height(spacing))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             CompositionLocalProvider(
@@ -167,6 +221,22 @@ fun PickTimeItem(
                 Text("12AM")
             }
         }
+    }
+}
+
+@Composable
+private fun EmptyTimeRangeBar() {
+    Row(
+        modifier = Modifier.clip(RoundedCornerShape(8.dp))
+    ) {
+        Box(
+            Modifier
+                .weight(1f)
+                .background(
+                    color = MaterialTheme.colorScheme.tertiaryContainer
+                )
+                .height(36.dp)
+        )
     }
 }
 

@@ -1,10 +1,13 @@
 package id.rezyfr.quiet.component
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -38,8 +41,38 @@ fun PrimaryButton(
     }
 }
 
+@Composable
+fun SecondaryButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit = {},
+    ) {
+    OutlinedButton(
+        modifier = modifier,
+        enabled = enabled,
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = MaterialTheme.colorScheme.background,
+        ),
+        border = BorderStroke(
+            2.dp,
+            MaterialTheme.colorScheme.outline
+        ),
+        shape = MaterialTheme.shapes.small
+    ) {
+        Text(text, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
 @Preview
 @Composable
 private fun PrimaryButtonPreview() {
-    QuietTheme { PrimaryButton(text = "Button") {} }
+    QuietTheme {
+        Column{
+            PrimaryButton(text = "Button") {}
+            SecondaryButton(text = "Button")
+        }
+    }
 }

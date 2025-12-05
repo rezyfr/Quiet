@@ -1,6 +1,5 @@
 package id.rezyfr.quiet.screen.main.rules
 
-import android.R.attr.fontWeight
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -22,9 +21,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -192,6 +191,10 @@ fun RuleItemContent(
         targetValue = if (rule.enabled) color.second else MaterialTheme.colorScheme.tertiaryContainer,
         animationSpec = tween(durationMillis = 500)
     )
+    val animateContentColor by animateColorAsState(
+        targetValue = if (rule.enabled) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+        animationSpec = tween(durationMillis = 500)
+    )
     Surface(
         color = animatedBackgroundColor,
         shape = RoundedCornerShape(24.dp),
@@ -211,6 +214,7 @@ fun RuleItemContent(
                     Icon(
                         Icons.Default.MoreVert,
                         contentDescription = null,
+                        tint = animateContentColor
                     )
                 }
 
@@ -218,7 +222,8 @@ fun RuleItemContent(
                     Text(
                         text = if (rule.enabled) "Enabled" else "Disabled",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = animateContentColor,
                         ),
                     )
                     Switch(
@@ -250,18 +255,18 @@ fun RuleItemContent(
 fun CreateRuleFab(onClick: () -> Unit) {
     FloatingActionButton(
         onClick = onClick,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(36.dp),
         containerColor = MaterialTheme.colorScheme.primary
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = spacingX, vertical = spacing),
+            modifier = Modifier.padding(horizontal = spacingX),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Add, contentDescription = null)
+            Icon(Icons.Rounded.Add, contentDescription = null)
             Spacer(Modifier.width(spacing))
             Text(
                 text = "Create rule",
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold
             )
         }
     }

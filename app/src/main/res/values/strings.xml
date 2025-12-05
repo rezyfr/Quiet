@@ -36,4 +36,7 @@
     <string name="timepick_always_active">Pick always active</string>
     <string name="timepick_helper">Tap on day\'s timeline to add or change a time when the rule will become active.</string>
     <string name="rule_add_prompt">Tap the + button to create a rule that will be triggered when you get a new notification or check out suggestions on the explore page.</string>
+    <string name="options">Options</string>
+    <string name="reset">Reset</string>
+    <string name="apply_to_all">Apply to all</string>
 </resources>
