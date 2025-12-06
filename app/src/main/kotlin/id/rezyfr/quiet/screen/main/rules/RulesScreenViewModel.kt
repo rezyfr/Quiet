@@ -23,7 +23,13 @@ class RulesScreenViewModel(private val navigator: AppComposeNavigator, private v
     fun getRules() {
         viewModelScope.launch {
             rulesRepository.getAllRules().collect { rules ->
-                _state.update { it.copy(rules = ViewState.Success(rules)) }
+                _state.update {
+                    if (rules.isNotEmpty()) {
+                        it.copy(rules = ViewState.Success(rules))
+                    } else {
+                        it
+                    }
+                }
             }
         }
     }

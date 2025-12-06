@@ -1,6 +1,5 @@
 package id.rezyfr.quiet.screen.rule
 
-import android.graphics.drawable.Drawable
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -56,13 +54,15 @@ import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
+import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.NotificationUiModel
 import id.rezyfr.quiet.domain.model.PostureCriteria
+import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.domain.model.RuleCriteria
 import id.rezyfr.quiet.domain.model.TimeCriteria
 import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.domain.model.getCriteriaTypes
-import id.rezyfr.quiet.screen.action.ActionItem
+import id.rezyfr.quiet.screen.action.getActionColor
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.component.ExtendedSpansText
 import id.rezyfr.quiet.ui.component.withSquiggly
@@ -73,6 +73,8 @@ import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXX
 import id.rezyfr.quiet.util.describe
 import id.rezyfr.quiet.util.getAppItem
+import id.rezyfr.quiet.util.inlineActionIcon
+import id.rezyfr.quiet.util.inlineAppIcon
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
@@ -113,7 +115,7 @@ fun AddRuleScreen(
     LaunchedEffect(actionString) {
         if (actionString != null) {
             try {
-                val action = Json.decodeFromString<ActionItem>(actionString)
+                val action = Json.decodeFromString<RuleAction>(actionString)
                 backStackEntry.savedStateHandle.remove<String>("key_pick_actions")
                 viewModel.setAction(action)
             } catch (e: Exception) {
@@ -265,6 +267,9 @@ fun RuleEditorHeader(
         if (state.selectedApps.size == 1) {
             put("app_icon", inlineAppIcon(state.selectedApps.first().icon))
         }
+        if (state.action != null) {
+            put("action_icon", inlineActionIcon(state.action))
+        }
     }
 
     ExtendedSpansText(
@@ -302,7 +307,18 @@ fun RuleEditorHeader(
             }
             append(" then ")
 
+            if (state.action != null) {
+                appendInlineContent("action_icon", "icon")
+                append(" ")
+            }
+
             withSquiggly(state.action?.title ?: "do nothing", onActionClick)
+
+            if (state.action is CooldownAction) {
+                val iconColor = getActionColor(state.action.category)
+                append(" for ")
+                withSquiggly(state.action.durationMs.toText(), {})
+            }
         },
         textStyle = MaterialTheme.typography.headlineMedium.copy(
             fontWeight = FontWeight.Bold,
@@ -310,6 +326,21 @@ fun RuleEditorHeader(
             lineHeight = 60.sp
         )
     )
+}
+
+fun Long.toText(): String {
+    val seconds = this / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    val days = hours / 24
+
+    return when {
+        days > 0 -> "$days days"
+        hours > 0 -> "$hours hours"
+        minutes > 0 -> "$minutes minutes"
+        seconds > 0 -> "$seconds seconds"
+        else -> "$this ms"
+    }
 }
 
 @Composable
@@ -436,25 +467,6 @@ fun RecentNotificationCard(
                 )
             }
         }
-    }
-}
-
-
-@Composable
-fun inlineAppIcon(icon: Drawable?): InlineTextContent {
-    return InlineTextContent(
-        placeholder = Placeholder(
-            height = 22.sp, // roughly width of the word
-            width = 22.sp,
-            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
-        )
-    ) {
-        Icon(
-            painter = rememberDrawablePainter(icon),
-            contentDescription = null,
-            tint = Color.Unspecified, // show original icon color
-            modifier = Modifier.size(22.dp).clip(CircleShape),
-        )
     }
 }
 

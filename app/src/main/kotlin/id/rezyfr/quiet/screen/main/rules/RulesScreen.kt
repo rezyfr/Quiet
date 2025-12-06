@@ -50,11 +50,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
-import id.rezyfr.quiet.domain.model.CallCriteria
-import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.domain.model.AttentionAction
+import id.rezyfr.quiet.domain.model.CallCriteria
 import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.DelayAction
+import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.domain.model.SilenceAction
 import id.rezyfr.quiet.ui.theme.AttentionBackground
@@ -387,7 +387,7 @@ fun PreviewRulesMainContent() {
                    apps =     listOf("id.rezyfr.quiet"),
                    keywords = listOf("Sampah") ,
                    criteria = listOf(CallCriteria("on_call")),
-                   action = CooldownAction("cooldown", 10)
+                   action = CooldownAction("cooldown", 10, "title", "desc", -1)
                 )
             )
         )

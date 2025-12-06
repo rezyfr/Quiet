@@ -3,8 +3,8 @@ package id.rezyfr.quiet.util
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.DismissAction
 import id.rezyfr.quiet.domain.model.NotificationModel
 import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.domain.model.TimeCriteria
@@ -21,13 +21,18 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-class NotificationListener : NotificationListenerService(), KoinComponent {
+class NotificationListener() : NotificationListenerService(), KoinComponent {
 
     private val dataMap = HashMap<String, NotificationModel>()
-
     private val notificationRepository: NotificationRepository by inject()
     private val ruleRepository: RuleRepository by inject()
     private val coroutineScope: CoroutineScope by inject()
+    private lateinit var cooldownPrefs: CooldownPrefs
+
+    override fun onCreate() {
+        super.onCreate()
+        cooldownPrefs = CooldownPrefs(this)
+    }
 
     override fun onListenerConnected() {
         try {
@@ -67,6 +72,12 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
             }
 
             applyAction(rule, sbn)
+
+            if (rule.action is CooldownAction) {
+                val duration = (rule.action as CooldownAction).durationMs
+                val nextAllowed = System.currentTimeMillis() + duration
+                cooldownPrefs.set(rule.id, nextAllowed)
+            }
         }
 
         saveNotification(sbn)
@@ -136,10 +147,19 @@ class NotificationListener : NotificationListenerService(), KoinComponent {
         )
     }
 
+    private fun isInCooldown(rule: Rule): Boolean {
+        val now = System.currentTimeMillis()
+        return now < cooldownPrefs.get(rule.id)
+    }
+
     fun applyAction(rule: Rule, sbn: StatusBarNotification) {
         when (rule.action) {
-            is CooldownAction -> cancelNotification(sbn.key)
-            is BatchAction -> cancelNotification(sbn.key)
+            is CooldownAction -> {
+                if (isInCooldown(rule)) {
+                    cancelNotification(sbn.key)
+                }
+            }
+            is DismissAction -> cancelNotification(sbn.key)
             else -> { /* custom action */ }
         }
     }

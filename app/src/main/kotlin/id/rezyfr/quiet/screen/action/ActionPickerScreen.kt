@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
+import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.ui.theme.QuietTheme
-import id.rezyfr.quiet.ui.theme.SilenceBackground
-import id.rezyfr.quiet.ui.theme.SilenceContent
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
@@ -54,7 +54,7 @@ fun ActionPickerScreen(viewModel: ActionPickerScreenViewModel = koinViewModel())
     ActionPickerContent(
         categories = state.actions,
         expandedState = state.expandedCategory,
-        selectedActionId = state.selectedAction?.id,
+        selectedAction = state.selectedAction,
         onToggleCategory = viewModel::expandCategory,
         onSelectAction = viewModel::onActionSelected,
         onPickAction = viewModel::pickAction,
@@ -66,9 +66,9 @@ fun ActionPickerContent(
     modifier: Modifier = Modifier,
     categories: List<ActionCategory> = listOf(),
     expandedState: Map<String, Boolean> = mapOf(),
-    selectedActionId: String? = null,
+    selectedAction: RuleAction? = null,
     onToggleCategory: (String) -> Unit = {},
-    onSelectAction: (ActionItem) -> Unit = {},
+    onSelectAction: (RuleAction) -> Unit = {},
     onPickAction: () -> Unit = {},
 ) {
     Column(
@@ -96,7 +96,7 @@ fun ActionPickerContent(
                     items(category.items) { action ->
                         ActionCard(
                             item = action,
-                            selected = selectedActionId == action.id,
+                            selected = selectedAction == action,
                             onClick = { onSelectAction(action) },
                         )
                         Spacer(Modifier.height(spacingX))
@@ -110,7 +110,7 @@ fun ActionPickerContent(
         PrimaryButton(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.action_pick),
-            enabled = selectedActionId != null,
+            enabled = selectedAction != null,
             onClick = onPickAction,
         )
 
@@ -153,7 +153,7 @@ fun CategoryHeader(
 
 @Composable
 fun ActionCard(
-    item: ActionItem,
+    item: RuleAction,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     selected: Boolean = false,
@@ -171,6 +171,7 @@ fun ActionCard(
         } else {
             MaterialTheme.colorScheme.onBackground
         }
+    val iconColor = getActionColor(item.category)
 
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -182,14 +183,14 @@ fun ActionCard(
             Box(
                 modifier =
                 Modifier.size(48.dp)
-                    .background(SilenceBackground, RoundedCornerShape(12.dp))
+                    .background(iconColor.first, RoundedCornerShape(12.dp))
                     .padding(spacing),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = item.icon.drawable(context),
                     contentDescription = null,
-                    tint = SilenceContent,
+                    tint = iconColor.second,
                 )
             }
 
@@ -217,46 +218,29 @@ fun ActionCard(
 @Preview(showBackground = true)
 @Composable
 private fun PreviewActionPicker() {
-    val context = LocalContext.current
     QuietTheme {
         ActionPickerContent(
             expandedState = mapOf("Category 1" to true, "Category 2" to true),
-            selectedActionId = "delete",
+            selectedAction = CooldownAction(
+                title = "Action 1",
+                description = "Description 1",
+                icon = R.drawable.ic_launcher_foreground,
+                durationMs = 1000,
+                target = "app"
+            ),
             categories =
             listOf(
                 ActionCategory(
                     name = "Category 1",
+                    id = "category_1",
                     items =
                     listOf(
-                        ActionItem(
-                            id = "mute",
+                        CooldownAction(
                             title = "Action 1",
                             description = "Description 1",
                             icon = R.drawable.ic_launcher_foreground,
-                        ),
-                        ActionItem(
-                            id = "unmute",
-                            title = "Action 2",
-                            description = "Description 2",
-                            icon = R.drawable.ic_launcher_foreground,
-                        ),
-                    ),
-                ),
-                ActionCategory(
-                    name = "Category 2",
-                    items =
-                    listOf(
-                        ActionItem(
-                            id = "delete",
-                            title = "Action 3",
-                            description = "Description 3",
-                            icon = R.drawable.ic_launcher_foreground,
-                        ),
-                        ActionItem(
-                            id = "add",
-                            title = "Action 4",
-                            description = "Description 4",
-                            icon = R.drawable.ic_launcher_foreground,
+                            durationMs = 1000,
+                            target = "app"
                         ),
                     ),
                 ),

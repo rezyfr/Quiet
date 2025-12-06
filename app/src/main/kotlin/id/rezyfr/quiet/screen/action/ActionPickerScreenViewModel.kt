@@ -2,6 +2,9 @@ package id.rezyfr.quiet.screen.action
 
 import androidx.lifecycle.ViewModel
 import id.rezyfr.quiet.R
+import id.rezyfr.quiet.domain.model.CooldownAction
+import id.rezyfr.quiet.domain.model.DismissAction
+import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +19,7 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
-    fun onActionSelected(action: ActionItem) {
+    fun onActionSelected(action: RuleAction) {
         _state.update { it.copy(selectedAction = action) }
     }
 
@@ -42,7 +45,7 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
     }
 
     data class State(
-        val selectedAction: ActionItem? = null,
+        val selectedAction: RuleAction? = null,
         val expandedCategory: Map<String, Boolean> =
             mapOf(
                 "Silence actions" to true,
@@ -53,47 +56,29 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
             listOf(
                 ActionCategory(
                     name = "Silence actions",
-                    items =
-                    listOf(
-                        ActionItem(
-                            id = "cooldown",
+                    id = "silence",
+                    items = listOf(
+                        CooldownAction(
                             title = "Cooldown",
                             icon = R.drawable.ic_action_freeze,
-                            description =
-                            "Prevent the same app or conversation from buzzing you multiple times in quick succession by muting or dismissing them automatically.",
-                        ),
-                        ActionItem(
-                            title = "Mute",
-                            icon = R.drawable.ic_action_mute,
-                            description =
-                            "Prevent the notification that matches your criteria from buzzing or playing a sound.",
-                            id = "mute",
-                        ),
-                    ),
+                            description = "Prevent the same app or conversation from buzzing you multiple times in quick succession by muting or dismissing them automatically.",
+                            target = "app",
+                            durationMs = 30000
+                        )
+                    )
                 ),
                 ActionCategory(
                     name = "Dismiss actions",
-                    items =
-                    listOf(
-                        ActionItem(
-                            id = "dismiss",
+                    id = "dismiss",
+                    items = listOf(
+                        DismissAction(
                             title = "Dismiss",
                             icon = R.drawable.ic_action_dismiss,
                             description = "Automatically dismiss the notification",
+                            immediately = true,
+                            delayMs = 0
                         )
-                    ),
-                ),
-                ActionCategory(
-                    name = "Automation actions",
-                    items =
-                    listOf(
-                        ActionItem(
-                            id = "open",
-                            title = "Open notification",
-                            icon = R.drawable.ic_action_open,
-                            description = "Automatically tap the notification",
-                        )
-                    ),
+                    )
                 ),
             ),
     )

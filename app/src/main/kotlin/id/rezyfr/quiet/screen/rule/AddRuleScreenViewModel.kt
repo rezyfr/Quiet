@@ -3,12 +3,9 @@ package id.rezyfr.quiet.screen.rule
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
-import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.CriteriaType
-import id.rezyfr.quiet.domain.model.DismissAction
 import id.rezyfr.quiet.domain.model.NotificationUiModel
 import id.rezyfr.quiet.domain.model.PostureCriteria
 import id.rezyfr.quiet.domain.model.Rule
@@ -21,7 +18,6 @@ import id.rezyfr.quiet.domain.repository.NotificationRepository
 import id.rezyfr.quiet.domain.repository.RuleRepository
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
-import id.rezyfr.quiet.screen.action.ActionItem
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,7 +43,7 @@ class AddRuleScreenViewModel(
         _state.update { it.copy(criteriaText = criteria) }
     }
 
-    fun setAction(action: ActionItem) {
+    fun setAction(action: RuleAction) {
         _state.update { it.copy(action = action) }
     }
 
@@ -172,7 +168,7 @@ class AddRuleScreenViewModel(
             apps = buildApps(),
             keywords = buildKeywords(),
             criteria = buildCriteria(),
-            action = s.action!!.toDomainAction() // conversion below
+            action = s.action!!
         )
 
         viewModelScope.launch {
@@ -180,15 +176,6 @@ class AddRuleScreenViewModel(
             navigator.navigateUp()
         }
     }
-
-    private fun ActionItem.toDomainAction(): RuleAction =
-        when (this.id) {
-            "dismiss_immediate" -> DismissAction(immediately = true, delayMs = null)
-            "dismiss_delay" -> DismissAction(immediately = false, delayMs = null)
-            "cooldown" -> CooldownAction(target = "app", durationMs = 0L)
-            "batch" -> BatchAction(mode = "during_schedule", schedule = null)
-            else -> error("Unknown action type")
-        }
 
     private fun buildApps(): List<String> =
         _state.value.selectedApps.map { it.packageName }
@@ -221,7 +208,7 @@ class AddRuleScreenViewModel(
     data class AddRuleScreenState(
         val selectedApps: List<AppItem> = listOf(),
         val criteriaText: List<String> = emptyList(),
-        val action: ActionItem? = null,
+        val action: RuleAction? = null,
         val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),
         val selectedCriteria: List<RuleCriteria> = emptyList(),
     )

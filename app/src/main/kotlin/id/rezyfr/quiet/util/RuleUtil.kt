@@ -1,14 +1,21 @@
 package id.rezyfr.quiet.util
 
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,13 +23,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
@@ -34,7 +50,57 @@ import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.domain.model.RuleCriteria
 import id.rezyfr.quiet.domain.model.TimeCriteria
-import id.rezyfr.quiet.screen.rule.inlineAppIcon
+import id.rezyfr.quiet.screen.action.getActionColor
+
+@Composable
+fun inlineAppIcon(
+    icon: Drawable?,
+    size: Int = 24
+): InlineTextContent {
+    return InlineTextContent(
+        placeholder = Placeholder(
+            height = size.sp, // roughly width of the word
+            width = size.sp,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+        )
+    ) {
+        Icon(
+            painter = rememberDrawablePainter(icon),
+            contentDescription = null,
+            tint = Color.Unspecified, // show original icon color
+            modifier = Modifier.size(size.dp).clip(CircleShape),
+        )
+    }
+}
+
+@Composable
+fun inlineActionIcon(
+    action: RuleAction,
+    size: Int = 24
+): InlineTextContent {
+    val iconColor = getActionColor(action.category)
+    return InlineTextContent(
+        placeholder = Placeholder(
+            height = size.sp, // roughly width of the word
+            width = size.sp,
+            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+        )
+    ) {
+        Box(
+            modifier =
+            Modifier.size(size.dp)
+                .background(iconColor.first, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = action.icon.drawable(LocalContext.current),
+                contentDescription = null,
+                tint = iconColor.second,
+                modifier = Modifier.size((size * 5/6).dp).clip(CircleShape),
+            )
+        }
+    }
+}
 
 @Composable
 fun Rule.describe(
@@ -65,8 +131,10 @@ fun Rule.describe(
     val inlineContent = mutableMapOf<String, InlineTextContent>().apply {
         if (apps.size == 1) {
             val appInfo = getAppItem(packageManager, listOf(apps.first()))
-            put("app_icon", inlineAppIcon(appInfo.first().icon))
+            put("app_icon", inlineAppIcon(appInfo.first().icon, 20))
         }
+
+        put("action_icon", inlineActionIcon(action, 20))
     }
     val annotatedString = buildAnnotatedString {
         append(stringResource(R.string.rule_when_notification))
@@ -79,6 +147,8 @@ fun Rule.describe(
         append(keywordText)
         append(criteriaText)
         append(" then ")
+        appendInlineContent("action_icon", "icon")
+        append(" ")
         append(actionText)
     }
 
@@ -157,8 +227,8 @@ fun RuleCriteria.describe(): String = when (this) {
         else -> posture
     }
 }
-fun RuleAction.describe(): String = when (this) {
 
+fun RuleAction.describe(): String = when (this) {
     is DismissAction ->
         if (immediately) {
             "dismiss immediately"
