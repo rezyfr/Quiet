@@ -6,6 +6,8 @@ plugins {
 android { namespace = "id.rezyfr.quiet.navigation" }
 
 dependencies {
-    api(libs.androidx.navigation.compose)
+    implementation(project(":domain"))
     implementation(libs.kotlinx.serialization.json)
+
+    api(libs.androidx.navigation.compose)
 }

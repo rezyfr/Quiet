@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import id.rezyfr.quiet.domain.model.TimeRange
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -55,7 +56,21 @@ sealed class QuietScreens(
 
     data object Action : QuietScreens("actions")
 
-    data object PickTime : QuietScreens("pick_time")
+    data object PickTime : QuietScreens(
+        route = "pick_time",
+        navArguments = listOf(
+            navArgument("key_pick_time") {
+                type = NavType.StringType
+                defaultValue = "[]"
+            }
+        )
+    ) {
+        const val KEY_PICK_TIME = "key_pick_time"
+        fun createRoute(pickTime: List<TimeRange>): String {
+            val json = Json.encodeToString(pickTime)
+            return "pick_time?key_pick_time=${Uri.encode(json)}"
+        }
+    }
 }
 
 private fun String.appendArguments(navArguments: List<NamedNavArgument>): String {

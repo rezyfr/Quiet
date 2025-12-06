@@ -25,4 +25,5 @@ rootProject.name = "Quiet"
 
 include(":app")
 
+include(":domain")
 include(":core:navigation")
