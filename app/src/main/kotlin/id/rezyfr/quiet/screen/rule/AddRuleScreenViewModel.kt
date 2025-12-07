@@ -3,6 +3,7 @@ package id.rezyfr.quiet.screen.rule
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
 import id.rezyfr.quiet.domain.model.CooldownAction
@@ -64,9 +65,12 @@ class AddRuleScreenViewModel(
         navigator.navigate(QuietScreens.Action.route)
     }
 
-    fun navigateToPickTime() {
+    fun navigateToPickTime(type: String) {
         val selectedTime = _state.value.selectedCriteria.find { it is TimeCriteria } as? TimeCriteria?
-        navigator.navigate(QuietScreens.PickTime.createRoute(selectedTime?.ranges ?: emptyList()))
+        navigator.navigate(QuietScreens.PickTime.createRoute(
+            pickTime = selectedTime?.ranges ?: emptyList(),
+            type = type
+        ))
     }
 
     fun getRecentNotification(
@@ -164,6 +168,16 @@ class AddRuleScreenViewModel(
             it.copy(
                 action = (it.action as? CooldownAction)?.copy(
                     durationMs = times
+                )
+            )
+        }
+    }
+
+    fun setBatchScheduleWindow(timeRanges: List<TimeRange>) {
+        _state.update {
+            it.copy(
+                action = (it.action as? BatchAction)?.copy(
+                    schedule = timeRanges
                 )
             )
         }

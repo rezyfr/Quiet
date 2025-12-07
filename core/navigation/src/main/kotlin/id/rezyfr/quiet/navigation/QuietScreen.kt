@@ -62,13 +62,17 @@ sealed class QuietScreens(
             navArgument("key_pick_time") {
                 type = NavType.StringType
                 defaultValue = "[]"
+            },
+            navArgument("type") {
+                type = NavType.StringType
+                defaultValue = "time_criteria"
             }
         )
     ) {
         const val KEY_PICK_TIME = "key_pick_time"
-        fun createRoute(pickTime: List<TimeRange>): String {
+        fun createRoute(pickTime: List<TimeRange>, type: String): String {
             val json = Json.encodeToString(pickTime)
-            return "pick_time?key_pick_time=${Uri.encode(json)}"
+            return "pick_time?key_pick_time=${Uri.encode(json)}&type=$type"
         }
     }
 }

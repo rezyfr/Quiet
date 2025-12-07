@@ -44,6 +44,7 @@ import id.rezyfr.quiet.ui.theme.spacingSmall
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXX
 import java.time.DayOfWeek
+import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,9 +128,14 @@ fun TimeRangeDialog(
         TimePickerSheet(
             initial = selectedStart,
             onDismiss = { pickingStart = false },
-            onSelected = {
-                selectedStart = it
+            onSelected = { newStart ->
+                selectedStart = newStart
                 pickingStart = false
+
+                // Ensure end is at least +1 minute
+                if (selectedEnd <= newStart) {
+                    selectedEnd = newStart + 1
+                }
             }
         )
     }
@@ -138,8 +144,10 @@ fun TimeRangeDialog(
         TimePickerSheet(
             initial = selectedEnd,
             onDismiss = { pickingEnd = false },
-            onSelected = {
-                selectedEnd = it
+            onSelected = { newEnd ->
+
+                // End cannot be <= start
+                selectedEnd = max(newEnd, selectedStart + 1)
                 pickingEnd = false
             }
         )

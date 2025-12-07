@@ -52,6 +52,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import id.rezyfr.quiet.R
 import id.rezyfr.quiet.component.PrimaryButton
+import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
 import id.rezyfr.quiet.domain.model.CooldownAction
@@ -60,9 +61,9 @@ import id.rezyfr.quiet.domain.model.PostureCriteria
 import id.rezyfr.quiet.domain.model.RuleAction
 import id.rezyfr.quiet.domain.model.RuleCriteria
 import id.rezyfr.quiet.domain.model.TimeCriteria
-import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.domain.model.getCriteriaTypes
 import id.rezyfr.quiet.screen.pickapp.AppItem
+import id.rezyfr.quiet.screen.picktime.PickTimeArgs
 import id.rezyfr.quiet.ui.component.ExtendedSpansText
 import id.rezyfr.quiet.ui.component.withSquiggly
 import id.rezyfr.quiet.ui.theme.QuietTheme
@@ -91,7 +92,7 @@ fun AddRuleScreen(
     val appPackageName = backStackEntry?.savedStateHandle?.get<List<String>>("key_pick_apps")
     val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
     val actionString = backStackEntry?.savedStateHandle?.get<String>("key_pick_actions")
-    val timeCriteria = backStackEntry?.savedStateHandle?.get<String>("key_pick_time")
+    val pickTimeArgs = backStackEntry?.savedStateHandle?.get<String>("key_pick_time")
     val pickedApp = remember(appPackageName) { getAppItem(pm, appPackageName.orEmpty()) }
 
     LaunchedEffect(appPackageName) {
@@ -108,7 +109,7 @@ fun AddRuleScreen(
         }
     }
 
-    LaunchedEffect(appPackageName, criteria, timeCriteria) {
+    LaunchedEffect(appPackageName, criteria, pickTimeArgs) {
         viewModel.getRecentNotification(pm)
     }
 
@@ -124,12 +125,15 @@ fun AddRuleScreen(
             }
         }
     }
-    LaunchedEffect(timeCriteria) {
-        if (timeCriteria != null) {
+
+    LaunchedEffect(pickTimeArgs) {
+        if (pickTimeArgs != null) {
             try {
-                val timeRange = Json.decodeFromString<List<TimeRange>>(timeCriteria)
-                if (timeRange.isNotEmpty()) {
-                    viewModel.addTimeCriteria(timeRange)
+                val args = Json.decodeFromString<PickTimeArgs>(pickTimeArgs)
+                if (args.type == "time_criteria") {
+                    viewModel.addTimeCriteria(args.timeRanges)
+                } else if (args.type == "batch_schedule") {
+                    viewModel.setBatchScheduleWindow(args.timeRanges)
                 }
                 backStackEntry.savedStateHandle.remove<String>("key_pick_time")
             } catch (e: Exception) {
@@ -148,7 +152,7 @@ fun AddRuleScreen(
         onExtraCriteriaClick = { criteria ->
             when (criteria) {
                 is TimeCriteria -> {
-                    viewModel.navigateToPickTime()
+                    viewModel.navigateToPickTime("time_criteria")
                 }
                 is BluetoothCriteria -> TODO()
                 is CallCriteria -> TODO()
@@ -157,6 +161,8 @@ fun AddRuleScreen(
         },
         onAddExtraCriteriaClick = { showCriteriaPicker = true },
         onCoolDownTimeClick = { showCooldownPicker = true },
+        onBatchScheduleClick = {
+            viewModel.navigateToPickTime("batch_schedule") },
         onSaveClick = {
             viewModel.saveRule()
         },
@@ -197,6 +203,7 @@ fun AddRuleContent(
     onAddExtraCriteriaClick: () -> Unit = {},
     onCoolDownTimeClick: () -> Unit = {},
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
+    onBatchScheduleClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -216,7 +223,8 @@ fun AddRuleContent(
                 onActionClick = onActionClick,
                 onAddExtraCriteriaClick = onAddExtraCriteriaClick,
                 onExtraCriteriaClick = onExtraCriteriaClick,
-                onCoolDownTimeClick = onCoolDownTimeClick
+                onCoolDownTimeClick = onCoolDownTimeClick,
+                onBatchScheduleClick = onBatchScheduleClick
             )
         }
 
@@ -258,7 +266,8 @@ fun RuleEditorHeader(
     onAddExtraCriteriaClick: () -> Unit = {},
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
     onCoolDownTimeClick: () -> Unit = {},
-    onActionClick: () -> Unit = {}
+    onActionClick: () -> Unit = {},
+    onBatchScheduleClick: () -> Unit = {}
 ) {
     val appText = if (state.selectedApps.size == 1) {
         state.selectedApps.first().label
@@ -310,7 +319,7 @@ fun RuleEditorHeader(
                     }
                     Row {
                         append(" ")
-                        withSquiggly("${criteria.describe()}") {
+                        withSquiggly(criteria.describe()) {
                             onExtraCriteriaClick.invoke(criteria)
                         }
                         if (index == state.selectedCriteria.lastIndex) {
@@ -334,6 +343,12 @@ fun RuleEditorHeader(
                 withSquiggly(
                     state.action.durationMs.toText(),
                     onCoolDownTimeClick
+                )
+            } else if (state.action is BatchAction) {
+                append(" ")
+                withSquiggly(
+                    "during schedule",
+                    onBatchScheduleClick
                 )
             }
         },
