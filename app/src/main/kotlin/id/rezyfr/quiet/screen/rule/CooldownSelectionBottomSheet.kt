@@ -17,25 +17,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import id.rezyfr.quiet.component.QuietBottomSheet
-import id.rezyfr.quiet.domain.model.CriteriaType
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingX
 import id.rezyfr.quiet.ui.theme.spacingXX
 
 @Composable
-fun ExtraCriteriaBottomSheet(
+fun CooldownTimeBottomSheet(
     modifier: Modifier = Modifier,
-    items: List<CriteriaType>,
-    onItemClick: (CriteriaType) -> Unit,
+    items: List<Long>,
+    onItemClick: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     QuietBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismiss,
     ) {
-        ExtraCriteriaBottomSheetContent(
+        CooldownTimeBottomSheetContent(
             modifier =
-                Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
+            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
             items = items,
             onItemClick = onItemClick
         )
@@ -43,33 +42,48 @@ fun ExtraCriteriaBottomSheet(
 }
 
 @Composable
-fun ExtraCriteriaBottomSheetContent(
+fun CooldownTimeBottomSheetContent(
     modifier: Modifier = Modifier,
-    items: List<CriteriaType> = listOf(),
-    onItemClick: (CriteriaType) -> Unit = {}
+    items: List<Long> = listOf(),
+    onItemClick: (Long) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth().padding(horizontal = spacingXX, vertical = spacingXX)
     ) {
         items(items) { item ->
-            ExtraCriteriaItem(criteria = item, onClick = { onItemClick(item) })
+            CooldownTimeItem(time = item, onClick = { onItemClick(item) })
             Spacer(Modifier.height(spacingX))
         }
     }
 }
 
 @Composable
-fun ExtraCriteriaItem(modifier: Modifier = Modifier, criteria: CriteriaType, onClick: () -> Unit) {
+fun CooldownTimeItem(modifier: Modifier = Modifier, time: Long, onClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.tertiaryContainer,
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Text(
-            text = "filter by ${criteria.value}",
+            text = time.toText(),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = spacingX, vertical = spacing)
         )
+    }
+}
+
+fun Long.toText(): String {
+    val seconds = this / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    val days = hours / 24
+
+    return when {
+        days > 0 -> "$days days"
+        hours > 0 -> "$hours hours"
+        minutes > 0 -> "$minutes minutes"
+        seconds > 0 -> "$seconds seconds"
+        else -> "$this ms"
     }
 }

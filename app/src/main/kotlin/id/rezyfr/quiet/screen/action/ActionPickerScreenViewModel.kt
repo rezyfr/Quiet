@@ -63,7 +63,7 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
                             icon = R.drawable.ic_action_freeze,
                             description = "Prevent the same app or conversation from buzzing you multiple times in quick succession by muting or dismissing them automatically.",
                             target = "app",
-                            durationMs = 30000
+                            durationMs = 300000
                         )
                     )
                 ),

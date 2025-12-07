@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import id.rezyfr.quiet.domain.model.BluetoothCriteria
 import id.rezyfr.quiet.domain.model.CallCriteria
+import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.CriteriaType
 import id.rezyfr.quiet.domain.model.NotificationUiModel
 import id.rezyfr.quiet.domain.model.PostureCriteria
@@ -158,6 +159,16 @@ class AddRuleScreenViewModel(
         }
     }
 
+    fun setCooldownTime(times: Long) {
+        _state.update {
+            it.copy(
+                action = (it.action as? CooldownAction)?.copy(
+                    durationMs = times
+                )
+            )
+        }
+    }
+
     fun saveRule() {
         val s = _state.value
 
@@ -204,6 +215,16 @@ class AddRuleScreenViewModel(
     fun getAvailableCriteria(): List<CriteriaType> {
         return getCriteriaTypes(selected = _state.value.selectedCriteria)
     }
+
+    fun getAvailableCooldownTimes() = listOf<Long>(
+        60000,
+        180000,
+        300000,
+        600000,
+        3600000,
+        10800000,
+        30000000,
+    )
 
     data class AddRuleScreenState(
         val selectedApps: List<AppItem> = listOf(),

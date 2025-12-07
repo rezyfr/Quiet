@@ -62,7 +62,6 @@ import id.rezyfr.quiet.domain.model.RuleCriteria
 import id.rezyfr.quiet.domain.model.TimeCriteria
 import id.rezyfr.quiet.domain.model.TimeRange
 import id.rezyfr.quiet.domain.model.getCriteriaTypes
-import id.rezyfr.quiet.screen.action.getActionColor
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.ui.component.ExtendedSpansText
 import id.rezyfr.quiet.ui.component.withSquiggly
@@ -87,6 +86,7 @@ fun AddRuleScreen(
     val pm = context.packageManager
     val backStackEntry = navController.currentBackStackEntryAsState().value
     var showCriteriaPicker by remember { mutableStateOf(false) }
+    var showCooldownPicker by remember { mutableStateOf(false) }
 
     val appPackageName = backStackEntry?.savedStateHandle?.get<List<String>>("key_pick_apps")
     val criteria = backStackEntry?.savedStateHandle?.get<List<String>>("key_criteria")
@@ -156,6 +156,7 @@ fun AddRuleScreen(
             }
         },
         onAddExtraCriteriaClick = { showCriteriaPicker = true },
+        onCoolDownTimeClick = { showCooldownPicker = true },
         onSaveClick = {
             viewModel.saveRule()
         },
@@ -172,6 +173,17 @@ fun AddRuleScreen(
             onDismiss = { showCriteriaPicker = false }
         )
     }
+
+    if (showCooldownPicker) {
+        CooldownTimeBottomSheet(
+            items = viewModel.getAvailableCooldownTimes(),
+            onItemClick = { cooldownTime ->
+                showCooldownPicker = false
+                viewModel.setCooldownTime(cooldownTime)
+            },
+            onDismiss = { showCooldownPicker = false }
+        )
+    }
 }
 
 @Composable
@@ -183,6 +195,7 @@ fun AddRuleContent(
     onActionClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
+    onCoolDownTimeClick: () -> Unit = {},
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
 ) {
     LazyColumn(
@@ -202,7 +215,8 @@ fun AddRuleContent(
                 onCriteriaClick = onCriteriaClick,
                 onActionClick = onActionClick,
                 onAddExtraCriteriaClick = onAddExtraCriteriaClick,
-                onExtraCriteriaClick = onExtraCriteriaClick
+                onExtraCriteriaClick = onExtraCriteriaClick,
+                onCoolDownTimeClick = onCoolDownTimeClick
             )
         }
 
@@ -243,6 +257,7 @@ fun RuleEditorHeader(
     onCriteriaClick: () -> Unit = {},
     onAddExtraCriteriaClick: () -> Unit = {},
     onExtraCriteriaClick: (RuleCriteria) -> Unit = {},
+    onCoolDownTimeClick: () -> Unit = {},
     onActionClick: () -> Unit = {}
 ) {
     val appText = if (state.selectedApps.size == 1) {
@@ -315,9 +330,11 @@ fun RuleEditorHeader(
             withSquiggly(state.action?.title ?: "do nothing", onActionClick)
 
             if (state.action is CooldownAction) {
-                val iconColor = getActionColor(state.action.category)
                 append(" for ")
-                withSquiggly(state.action.durationMs.toText(), {})
+                withSquiggly(
+                    state.action.durationMs.toText(),
+                    onCoolDownTimeClick
+                )
             }
         },
         textStyle = MaterialTheme.typography.headlineMedium.copy(
@@ -326,21 +343,6 @@ fun RuleEditorHeader(
             lineHeight = 60.sp
         )
     )
-}
-
-fun Long.toText(): String {
-    val seconds = this / 1000
-    val minutes = seconds / 60
-    val hours = minutes / 60
-    val days = hours / 24
-
-    return when {
-        days > 0 -> "$days days"
-        hours > 0 -> "$hours hours"
-        minutes > 0 -> "$minutes minutes"
-        seconds > 0 -> "$seconds seconds"
-        else -> "$this ms"
-    }
 }
 
 @Composable
@@ -444,7 +446,9 @@ fun RecentNotificationCard(
 
                     Text(
                         text = item.first.postTime.toString(),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
