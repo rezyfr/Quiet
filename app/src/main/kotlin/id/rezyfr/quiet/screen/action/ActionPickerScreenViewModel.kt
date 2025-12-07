@@ -2,6 +2,7 @@ package id.rezyfr.quiet.screen.action
 
 import androidx.lifecycle.ViewModel
 import id.rezyfr.quiet.R
+import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.DismissAction
 import id.rezyfr.quiet.domain.model.RuleAction
@@ -77,6 +78,19 @@ class ActionPickerScreenViewModel(private val navigator: AppComposeNavigator) : 
                             description = "Automatically dismiss the notification",
                             immediately = true,
                             delayMs = 0
+                        )
+                    )
+                ),
+                ActionCategory(
+                    name = "Batch actions",
+                    id = "batch",
+                    items = listOf(
+                        BatchAction(
+                            title = "Batch",
+                            icon = R.drawable.ic_action_batch,
+                            description = "Receive notification in batch. Set specific time window to start and receive notification in batch.",
+                            mode = "schedule",
+                            schedule = listOf()
                         )
                     )
                 ),

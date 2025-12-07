@@ -31,12 +31,13 @@ class PickTimeViewModel(
         )
     }
 
-    fun pickTime() {
-        val args = if (_state.value.isModified) {
-            Json.encodeToString(_state.value.days)
-        } else {
-            Json.encodeToString("[]")
-        }
+    fun pickTime(type: String) {
+        val args = Json.encodeToString(
+            PickTimeArgs(
+                type = type,
+                timeRanges = _state.value.days
+            )
+        )
         appComposeNavigator.navigateBackWithResult(
             "key_pick_time",
             args,

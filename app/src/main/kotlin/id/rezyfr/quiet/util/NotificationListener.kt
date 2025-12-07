@@ -3,12 +3,15 @@ package id.rezyfr.quiet.util
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import id.rezyfr.quiet.domain.model.BatchAction
+import id.rezyfr.quiet.domain.model.BatchModel
 import id.rezyfr.quiet.domain.model.CooldownAction
 import id.rezyfr.quiet.domain.model.DismissAction
 import id.rezyfr.quiet.domain.model.NotificationModel
 import id.rezyfr.quiet.domain.model.Rule
 import id.rezyfr.quiet.domain.model.TimeCriteria
 import id.rezyfr.quiet.domain.model.TimeRange
+import id.rezyfr.quiet.domain.repository.BatchRepository
 import id.rezyfr.quiet.domain.repository.NotificationRepository
 import id.rezyfr.quiet.domain.repository.RuleRepository
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +29,7 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
     private val dataMap = HashMap<String, NotificationModel>()
     private val notificationRepository: NotificationRepository by inject()
     private val ruleRepository: RuleRepository by inject()
+    private val batchRepository: BatchRepository by inject()
     private val coroutineScope: CoroutineScope by inject()
     private lateinit var cooldownPrefs: CooldownPrefs
 
@@ -72,12 +76,6 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
             }
 
             applyAction(rule, sbn)
-
-            if (rule.action is CooldownAction) {
-                val duration = (rule.action as CooldownAction).durationMs
-                val nextAllowed = System.currentTimeMillis() + duration
-                cooldownPrefs.set(rule.id, nextAllowed)
-            }
         }
 
         saveNotification(sbn)
@@ -152,17 +150,49 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
         return now < cooldownPrefs.get(rule.id)
     }
 
+    fun isInBatchWindow(windows: List<TimeRange>): Boolean {
+        val now = LocalDateTime.now()
+        val day = now.dayOfWeek
+        val minutes = now.hour * 60 + now.minute
+
+        return windows.any { it.day == day && minutes in it.startMinutes until it.endMinutes }
+    }
+
     fun applyAction(rule: Rule, sbn: StatusBarNotification) {
         when (rule.action) {
             is CooldownAction -> {
                 if (isInCooldown(rule)) {
                     cancelNotification(sbn.key)
+                } else {
+                    val duration = (rule.action as CooldownAction).durationMs
+                    val nextAllowed = System.currentTimeMillis() + duration
+                    cooldownPrefs.set(rule.id, nextAllowed)
                 }
             }
             is DismissAction -> cancelNotification(sbn.key)
+            is BatchAction -> {
+                val action = rule.action as BatchAction
+                if (action.schedule.isNotEmpty()){
+                    if (isInBatchWindow(action.schedule)){
+                        coroutineScope.launch {
+                            batchRepository.addBatch(
+                                BatchModel(
+                                    ruleId = rule.id,
+                                    packageName = sbn.packageName,
+                                    title = "${sbn.getTitleBig()}\n${sbn.getTitle()}".trim(),
+                                    text = sbn.getText(),
+                                    timestamp = System.currentTimeMillis()
+                                )
+                            )
+                        }
+                        cancelNotification(sbn.key)
+                    }
+                }
+            }
             else -> { /* custom action */ }
         }
     }
+
 }
 
 fun StatusBarNotification.getText(): String =

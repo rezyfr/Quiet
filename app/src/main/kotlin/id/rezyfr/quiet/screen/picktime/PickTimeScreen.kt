@@ -50,9 +50,10 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
+
 @Composable
 fun PickTimeScreen(
-    timeRanges: List<TimeRange> = listOf(),
+    args: PickTimeArgs,
     viewModel: PickTimeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -60,7 +61,7 @@ fun PickTimeScreen(
     var dialogData by remember { mutableStateOf<TimeRange?>(null) }
 
     LaunchedEffect(Unit) {
-        viewModel.setTimeRanges(timeRanges)
+        viewModel.setTimeRanges(args.timeRanges)
     }
 
     PickTimeContent(
@@ -68,7 +69,7 @@ fun PickTimeScreen(
         onPickItemClick = {
             dialogData = it
         },
-        onPickTimeConfirm = viewModel::pickTime,
+        onPickTimeConfirm = { viewModel.pickTime(args.type) },
         onResetClick = viewModel::reset,
         onApplyToAllClick = viewModel::applyToAll
     )

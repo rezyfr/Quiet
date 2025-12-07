@@ -1,6 +1,7 @@
 package id.rezyfr.quiet.di
 
 import androidx.room.Room
+import id.rezyfr.quiet.data.dao.BatchDao
 import id.rezyfr.quiet.data.dao.NotificationDao
 import id.rezyfr.quiet.data.dao.RuleDao
 import id.rezyfr.quiet.data.database.QuietDatabase
@@ -14,4 +15,5 @@ val persistenceModule = module {
 
     single<NotificationDao> { get<QuietDatabase>().notificationDao() }
     single<RuleDao> { get<QuietDatabase>().ruleDao() }
+    single<BatchDao> { get<QuietDatabase>().batchDao() }
 }

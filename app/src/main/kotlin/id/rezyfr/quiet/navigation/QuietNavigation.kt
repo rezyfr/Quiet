@@ -11,6 +11,7 @@ import id.rezyfr.quiet.screen.action.ActionPickerScreen
 import id.rezyfr.quiet.screen.criteria.CriteriaScreen
 import id.rezyfr.quiet.screen.main.MainBottomPager
 import id.rezyfr.quiet.screen.pickapp.PickAppScreen
+import id.rezyfr.quiet.screen.picktime.PickTimeArgs
 import id.rezyfr.quiet.screen.picktime.PickTimeScreen
 import id.rezyfr.quiet.screen.rule.AddRuleScreen
 import id.rezyfr.quiet.util.RuleJson.json
@@ -43,7 +44,8 @@ fun NavGraphBuilder.addRuleNavigation(navHostController: NavHostController) {
     composable(route = QuietScreens.PickTime.name) {
         val raw = it.arguments?.getString(KEY_PICK_TIME) ?: "[]"
         val timeRange = json.decodeFromString<List<TimeRange>>(raw)
-        PickTimeScreen(timeRange)
+        val type = it.arguments?.getString("type") ?: "time_criteria"
+        PickTimeScreen(PickTimeArgs(timeRange, type))
     }
 
     composable(route = QuietScreens.Action.name) { ActionPickerScreen() }

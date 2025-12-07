@@ -42,8 +42,8 @@ data class DismissAction(
 @Serializable
 @SerialName("batch")
 data class BatchAction(
-    val mode: String,
-    val schedule: List<TimeRange>?,
+    val mode: String, // schedule, interval
+    val schedule: List<TimeRange>,
     override val title: String = "",
     override val description: String = "",
     override val icon: Int = -1,
