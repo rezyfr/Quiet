@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import id.rezyfr.quiet.domain.model.TimeRange
+import id.rezyfr.quiet.navigation.QuietScreens.AddRules.KEY_EDIT_RULE
 import id.rezyfr.quiet.navigation.QuietScreens.Criteria.KEY_CRITERIA
 import id.rezyfr.quiet.navigation.QuietScreens.PickApp.KEY_PICKED_APPS
 import id.rezyfr.quiet.navigation.QuietScreens.PickTime.KEY_PICK_TIME
@@ -22,7 +23,13 @@ fun NavGraphBuilder.quietHomeNavigation() {
 }
 
 fun NavGraphBuilder.addRuleNavigation(navHostController: NavHostController) {
-    composable(route = QuietScreens.AddRules.name) { AddRuleScreen(navHostController) }
+    composable(
+        route = QuietScreens.AddRules.name,
+        arguments = QuietScreens.AddRules.navArguments
+    ) {
+        val ruleId = it.arguments?.getLong(KEY_EDIT_RULE)
+        AddRuleScreen(navHostController, ruleId = ruleId)
+    }
 
     composable(
         route = QuietScreens.PickApp.name,
