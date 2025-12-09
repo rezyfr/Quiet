@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +40,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -88,6 +93,9 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
         onRuleClick = viewModel::navigateToAddRules,
         onToggle = {
             viewModel.toggleRules(it)
+        },
+        onDelete = {
+            viewModel.deleteRule(it)
         }
     )
 
@@ -102,15 +110,20 @@ fun RulesContent(
     onCreateRuleClick: () -> Unit = {},
     onRuleClick: (Long) -> Unit = {},
     onToggle: (Rule) -> Unit,
+    onDelete: (Rule) -> Unit,
     state: RulesScreenViewModel.RulesScreenState
 ) {
     if (state.rules is ViewState.Empty) {
         RulesEmptyContent(modifier, onCreateRuleClick)
     } else if (state.rules is ViewState.Success) {
-        RulesMainContent(modifier,
+        RulesMainContent(
+            modifier,
             onCreateRuleClick = onCreateRuleClick,
             onRuleClick = onRuleClick,
-            rules = state.rules.data!!, onRuleToggleClick = onToggle)
+            rules = state.rules.data!!,
+            onRuleToggleClick = onToggle,
+            onDeleteClick = onDelete
+        )
     }
 }
 
@@ -120,7 +133,8 @@ fun RulesMainContent(
     rules: List<Rule>,
     onCreateRuleClick: () -> Unit = {},
     onRuleToggleClick: (Rule) -> Unit = {},
-    onRuleClick: (Long) -> Unit = {}
+    onRuleClick: (Long) -> Unit = {},
+    onDeleteClick: (Rule) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -152,7 +166,7 @@ fun RulesMainContent(
                         rule = rule,
                         onToggle = { onRuleToggleClick(rule) },
                         onClick = { onRuleClick(rule.id) },
-                        onMenuClick = { }
+                        onDeleteClick = { onDeleteClick(rule) }
                     )
                 }
             }
@@ -201,8 +215,9 @@ fun RuleItemContent(
     rule: Rule,
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit,
-    onMenuClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     val color = getColor(rule.action)
     val animatedBackgroundColor by animateColorAsState(
         targetValue = if (rule.enabled) color.second else MaterialTheme.colorScheme.tertiaryContainer,
@@ -227,12 +242,28 @@ fun RuleItemContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onMenuClick) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = null,
-                        tint = animateContentColor
-                    )
+                Box {
+                    IconButton(onClick = {
+                        expanded = true
+                    }) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = null,
+                            tint = animateContentColor
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.delete)) },
+                            onClick = {
+                                onDeleteClick.invoke()
+                                expanded = false
+                            }
+                        )
+                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -262,7 +293,7 @@ fun RuleItemContent(
                 color = MaterialTheme.colorScheme.background,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                rule.describe(Modifier.padding(spacingX), rule.enabled, LocalContext.current.packageManager)  // e.g. "When I get a notification from Gmail during schedule then mute
+                rule.describe(Modifier.padding(spacingX), rule.enabled, LocalContext.current.packageManager) // e.g. "When I get a notification from Gmail during schedule then mute
             }
         }
     }
@@ -370,8 +401,8 @@ private fun RulesFooter(onCreateRuleClick: () -> Unit = {}) {
     }
 }
 
-fun getColor(action: RuleAction) : Pair<Color, Color> {
-    return when(action) {
+fun getColor(action: RuleAction): Pair<Color, Color> {
+    return when (action) {
         is SilenceAction -> Pair(SilenceContent, SilenceBackground)
         is AttentionAction -> Pair(AttentionContent, AttentionBackground)
         is DelayAction -> Pair(DelayContent, DelayBackground)
@@ -386,13 +417,13 @@ fun PreviewRulesMainContent() {
         RulesMainContent(
             rules = listOf(
                 Rule(
-                   id = 0,
-                   name = "",
-                   enabled = true,
-                   apps =     listOf("id.rezyfr.quiet"),
-                   keywords = listOf("Sampah") ,
-                   criteria = listOf(CallCriteria("on_call")),
-                   action = CooldownAction("cooldown", 10, "title", "desc", -1)
+                    id = 0,
+                    name = "",
+                    enabled = true,
+                    apps = listOf("id.rezyfr.quiet"),
+                    keywords = listOf("Sampah"),
+                    criteria = listOf(CallCriteria("on_call")),
+                    action = CooldownAction("cooldown", 10, "title", "desc", -1)
                 )
             )
         )
