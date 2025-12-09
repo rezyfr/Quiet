@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,7 +67,10 @@ import id.rezyfr.quiet.domain.model.getCriteriaTypes
 import id.rezyfr.quiet.screen.pickapp.AppItem
 import id.rezyfr.quiet.screen.picktime.PickTimeArgs
 import id.rezyfr.quiet.ui.component.ExtendedSpansText
+import id.rezyfr.quiet.ui.component.squigglyPainterDefaults
 import id.rezyfr.quiet.ui.component.withSquiggly
+import id.rezyfr.quiet.ui.component.withSquigglyError
+import id.rezyfr.quiet.ui.theme.AttentionBackground
 import id.rezyfr.quiet.ui.theme.QuietTheme
 import id.rezyfr.quiet.ui.theme.spacing
 import id.rezyfr.quiet.ui.theme.spacingSmall
@@ -81,6 +86,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AddRuleScreen(
     navController: NavController,
+    ruleId: Long? = null,
     viewModel: AddRuleScreenViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
@@ -95,6 +101,11 @@ fun AddRuleScreen(
     val pickTimeArgs = backStackEntry?.savedStateHandle?.get<String>("key_pick_time")
     val pickedApp = remember(appPackageName) { getAppItem(pm, appPackageName.orEmpty()) }
 
+    LaunchedEffect(ruleId) {
+        if (ruleId != null) {
+            viewModel.getRule(ruleId, pm)
+        }
+    }
     LaunchedEffect(appPackageName) {
         if (appPackageName != null) {
             backStackEntry.savedStateHandle.remove<List<String>>("key_pick_apps")
@@ -154,6 +165,7 @@ fun AddRuleScreen(
                 is TimeCriteria -> {
                     viewModel.navigateToPickTime("time_criteria")
                 }
+
                 is BluetoothCriteria -> TODO()
                 is CallCriteria -> TODO()
                 is PostureCriteria -> TODO()
@@ -162,9 +174,10 @@ fun AddRuleScreen(
         onAddExtraCriteriaClick = { showCriteriaPicker = true },
         onCoolDownTimeClick = { showCooldownPicker = true },
         onBatchScheduleClick = {
-            viewModel.navigateToPickTime("batch_schedule") },
+            viewModel.navigateToPickTime("batch_schedule")
+        },
         onSaveClick = {
-            viewModel.saveRule()
+            viewModel.saveRule(ruleId)
         },
         state = state,
     )
@@ -194,7 +207,7 @@ fun AddRuleScreen(
 
 @Composable
 fun AddRuleContent(
-    state: AddRuleScreenViewModel.AddRuleScreenState,
+    state: AddRuleScreenState,
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
@@ -206,7 +219,8 @@ fun AddRuleContent(
     onBatchScheduleClick: () -> Unit = {},
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(spacingX),
         contentPadding = PaddingValues(bottom = spacingXX),
@@ -241,7 +255,9 @@ fun AddRuleContent(
 
         item {
             HorizontalDivider(
-                modifier = Modifier.padding(top = 24.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(top = 24.dp)
+                    .fillMaxWidth(),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
             )
@@ -259,7 +275,7 @@ fun AddRuleContent(
 
 @Composable
 fun RuleEditorHeader(
-    state: AddRuleScreenViewModel.AddRuleScreenState,
+    state: AddRuleScreenState,
     modifier: Modifier = Modifier,
     onAppClick: () -> Unit = {},
     onCriteriaClick: () -> Unit = {},
@@ -299,7 +315,9 @@ fun RuleEditorHeader(
     ExtendedSpansText(
         modifier = modifier.padding(vertical = 16.dp),
         inlineContent = inlineContent,
-        bottomOffset = 8.sp,
+        painter = squigglyPainterDefaults(
+            bottomOffset = 8.sp,
+        ),
         lineHeight = 60.sp,
         text = buildAnnotatedString {
             append(stringResource(R.string.rule_when_notification))
@@ -336,7 +354,11 @@ fun RuleEditorHeader(
                 append(" ")
             }
 
-            withSquiggly(state.action?.title ?: "do nothing", onActionClick)
+            if (state.errorState is AddRuleErrorState.MissingActionError) {
+                withSquigglyError(state.action?.title ?: "do nothing", onActionClick)
+            } else {
+                withSquiggly(state.action?.title ?: "do nothing", onActionClick)
+            }
 
             if (state.action is CooldownAction) {
                 append(" for ")
@@ -358,6 +380,34 @@ fun RuleEditorHeader(
             lineHeight = 60.sp
         )
     )
+
+    if (state.errorState != null) {
+        ErrorFieldSection(Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+private fun ErrorFieldSection(
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier.padding(vertical = spacingX),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacingXX)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = null,
+            tint = AttentionBackground
+        )
+        Text(
+            stringResource(R.string.add_rule_error_text),
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        )
+    }
 }
 
 @Composable
@@ -374,7 +424,11 @@ private fun AnnotatedString.Builder.AddExtraCriteria(onAddExtraCriteriaClick: ()
 
 @Composable
 fun RecentMatchingEmptySection(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 24.dp)
+    ) {
         Text(
             text = stringResource(R.string.rule_recent_matching_notifications),
             style = MaterialTheme.typography.titleMedium.copy(
@@ -401,9 +455,10 @@ fun RecentMatchingNotificationsSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier =
-            Modifier.fillMaxWidth()
-                .height(1.5.dp)
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
         )
 
         Spacer(Modifier.height(spacingXX))
@@ -432,7 +487,9 @@ fun RecentNotificationCard(
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(spacingX).fillMaxWidth(),
+            modifier = Modifier
+                .padding(spacingX)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top,
         ) {
@@ -451,9 +508,9 @@ fun RecentNotificationCard(
                     Text(
                         text = item.second.label,
                         style =
-                        MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
+                            MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
 
@@ -481,7 +538,7 @@ fun RecentNotificationCard(
                 Text(
                     text = item.first.text,
                     style =
-                    MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -526,7 +583,7 @@ private fun ExtraCriteriaBottomSheetPreview() {
 private fun AddRuleEmptyPreview() {
     QuietTheme {
         AddRuleContent(
-            state = AddRuleScreenViewModel.AddRuleScreenState(),
+            state = AddRuleScreenState(),
         )
     }
 }
@@ -538,22 +595,22 @@ private fun AddRuleFilledPreview() {
     QuietTheme {
         AddRuleContent(
             state =
-            AddRuleScreenViewModel.AddRuleScreenState(
-                selectedApps =
-                listOf(
-                    AppItem(
-                        label = "Microsoft Teams",
-                        packageName = "com.microsoft.teams",
-                        icon =
-                        AppCompatResources.getDrawable(
-                            context, R.drawable.ic_launcher_foreground
-                        )!!,
-                    )
+                AddRuleScreenState(
+                    selectedApps =
+                        listOf(
+                            AppItem(
+                                label = "Microsoft Teams",
+                                packageName = "com.microsoft.teams",
+                                icon =
+                                    AppCompatResources.getDrawable(
+                                        context, R.drawable.ic_launcher_foreground
+                                    )!!,
+                            )
+                        ),
+                    criteriaText = listOf("meeting", "call"),
+                    selectedCriteria = listOf(TimeCriteria(listOf())),
+                    action = null,
                 ),
-                criteriaText = listOf("meeting", "call"),
-                selectedCriteria = listOf(TimeCriteria(listOf())),
-                action = null,
-            ),
         )
     }
 }
@@ -565,42 +622,42 @@ private fun AddRuleFilledWithRecentPreview() {
     QuietTheme {
         AddRuleContent(
             state =
-            AddRuleScreenViewModel.AddRuleScreenState(
-                selectedApps =
-                listOf(
-                    AppItem(
-                        label = "Microsoft Teams",
-                        packageName = "com.microsoft.teams",
-                        icon =
-                        AppCompatResources.getDrawable(
-                            context, R.drawable.ic_launcher_foreground
-                        )!!,
-                    )
-                ),
-                criteriaText = listOf("meeting", "call"),
-                action = null,
-                notificationList =
-                listOf(
-                    Pair(
-                        NotificationUiModel(
-                            sbnKey = "sbnKey",
-                            packageName = "com.btpn.dc",
-                            title = "Streaming Makin Hemat",
-                            text =
-                            "Karena ada cashback 50% untuk bayar layanan steaming favorit pakai Kartu Kredit Jenius. Khusus buat kamu, Cek di sini\uD83D\uDC47\uD83C\uDFFD\n",
-                            postTime = "07:00 AM",
+                AddRuleScreenState(
+                    selectedApps =
+                        listOf(
+                            AppItem(
+                                label = "Microsoft Teams",
+                                packageName = "com.microsoft.teams",
+                                icon =
+                                    AppCompatResources.getDrawable(
+                                        context, R.drawable.ic_launcher_foreground
+                                    )!!,
+                            )
                         ),
-                        AppItem(
-                            label = "Jenius",
-                            packageName = "com.btpn.dc",
-                            icon =
-                            AppCompatResources.getDrawable(
-                                context, R.drawable.ic_launcher_foreground
-                            )!!,
+                    criteriaText = listOf("meeting", "call"),
+                    action = null,
+                    notificationList =
+                        listOf(
+                            Pair(
+                                NotificationUiModel(
+                                    sbnKey = "sbnKey",
+                                    packageName = "com.btpn.dc",
+                                    title = "Streaming Makin Hemat",
+                                    text =
+                                        "Karena ada cashback 50% untuk bayar layanan steaming favorit pakai Kartu Kredit Jenius. Khusus buat kamu, Cek di sini\uD83D\uDC47\uD83C\uDFFD\n",
+                                    postTime = "07:00 AM",
+                                ),
+                                AppItem(
+                                    label = "Jenius",
+                                    packageName = "com.btpn.dc",
+                                    icon =
+                                        AppCompatResources.getDrawable(
+                                            context, R.drawable.ic_launcher_foreground
+                                        )!!,
+                                ),
+                            )
                         ),
-                    )
                 ),
-            ),
         )
     }
 }

@@ -19,7 +19,21 @@ sealed class QuietScreens(
     // home screen
     data object Home : QuietScreens("home")
 
-    data object AddRules : QuietScreens("add_rules")
+    data object AddRules : QuietScreens(
+        route = "add_rules",
+        navArguments = listOf(
+            navArgument("key_edit_rule") {
+                type = NavType.LongType
+                defaultValue = 0
+            }
+        )
+    ) {
+        const val KEY_EDIT_RULE = "key_edit_rule"
+
+        fun createRoute(ruleId: Long?): String {
+            return "add_rules?key_edit_rule=${Uri.encode(ruleId.toString())}"
+        }
+    }
 
     data object PickApp : QuietScreens(
         route = "pick_app",

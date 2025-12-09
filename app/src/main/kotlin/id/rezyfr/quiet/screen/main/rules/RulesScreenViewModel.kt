@@ -16,8 +16,8 @@ class RulesScreenViewModel(private val navigator: AppComposeNavigator, private v
     private val _state = MutableStateFlow(RulesScreenState())
     val state = _state.asStateFlow()
 
-    fun navigateToAddRules() {
-        navigator.navigate(QuietScreens.AddRules.route)
+    fun navigateToAddRules(ruleId: Long? = null) {
+        navigator.navigate(QuietScreens.AddRules.createRoute(ruleId))
     }
 
     fun getRules() {

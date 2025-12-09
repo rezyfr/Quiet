@@ -85,6 +85,7 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
         modifier,
         state = state,
         onCreateRuleClick = viewModel::navigateToAddRules,
+        onRuleClick = viewModel::navigateToAddRules,
         onToggle = {
             viewModel.toggleRules(it)
         }
@@ -99,13 +100,17 @@ fun RulesScreen(modifier: Modifier = Modifier, viewModel: RulesScreenViewModel =
 fun RulesContent(
     modifier: Modifier = Modifier,
     onCreateRuleClick: () -> Unit = {},
+    onRuleClick: (Long) -> Unit = {},
     onToggle: (Rule) -> Unit,
     state: RulesScreenViewModel.RulesScreenState
 ) {
     if (state.rules is ViewState.Empty) {
         RulesEmptyContent(modifier, onCreateRuleClick)
     } else if (state.rules is ViewState.Success) {
-        RulesMainContent(modifier, onCreateRuleClick = onCreateRuleClick, rules = state.rules.data!!, onRuleToggleClick = onToggle)
+        RulesMainContent(modifier,
+            onCreateRuleClick = onCreateRuleClick,
+            onRuleClick = onRuleClick,
+            rules = state.rules.data!!, onRuleToggleClick = onToggle)
     }
 }
 
@@ -115,7 +120,7 @@ fun RulesMainContent(
     rules: List<Rule>,
     onCreateRuleClick: () -> Unit = {},
     onRuleToggleClick: (Rule) -> Unit = {},
-    onRuleClick: (Rule) -> Unit = {}
+    onRuleClick: (Long) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -126,7 +131,7 @@ fun RulesMainContent(
     ) {
         Column(
             modifier = Modifier
-                .padding(spacing)
+                .padding(it)
                 .fillMaxSize()
         ) {
             RulesMainHeader()
@@ -146,7 +151,7 @@ fun RulesMainContent(
                     RuleItemContent(
                         rule = rule,
                         onToggle = { onRuleToggleClick(rule) },
-                        onClick = { onRuleClick(rule) },
+                        onClick = { onRuleClick(rule.id) },
                         onMenuClick = { }
                     )
                 }

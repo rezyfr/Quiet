@@ -21,6 +21,7 @@ import id.rezyfr.quiet.domain.repository.RuleRepository
 import id.rezyfr.quiet.navigation.AppComposeNavigator
 import id.rezyfr.quiet.navigation.QuietScreens
 import id.rezyfr.quiet.screen.pickapp.AppItem
+import id.rezyfr.quiet.util.getAppItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -37,6 +38,20 @@ class AddRuleScreenViewModel(
     private val _state = MutableStateFlow(AddRuleScreenState())
     val state = _state.asStateFlow()
 
+    fun getRule(ruleId: Long, packageManager: PackageManager){
+        viewModelScope.launch {
+            val rule = ruleRepository.getRule(ruleId) ?: return@launch
+            _state.update {
+                it.copy(
+                    selectedApps = getAppItem(packageManager, rule.apps),
+                    criteriaText = rule.keywords,
+                    selectedCriteria = rule.criteria,
+                    action = rule.action
+                )
+            }
+        }
+    }
+
     fun setAppItem(appItems: List<AppItem>) {
         _state.update { it.copy(selectedApps = appItems) }
     }
@@ -46,7 +61,10 @@ class AddRuleScreenViewModel(
     }
 
     fun setAction(action: RuleAction) {
-        _state.update { it.copy(action = action) }
+        _state.update { it.copy(
+            action = action,
+            errorState = if (it.errorState == AddRuleErrorState.MissingActionError) null else it.errorState
+        ) }
     }
 
     fun navigateToPickApp() {
@@ -183,11 +201,17 @@ class AddRuleScreenViewModel(
         }
     }
 
-    fun saveRule() {
+    fun saveRule(ruleId: Long?) {
+        if (_state.value.action == null) {
+            _state.update {
+                it.copy(errorState = AddRuleErrorState.MissingActionError)
+            }
+            return
+        }
         val s = _state.value
 
         val rule = Rule(
-            id = 0,
+            id = ruleId ?: 0,
             name = "",
             enabled = true,
             apps = buildApps(),
@@ -197,7 +221,11 @@ class AddRuleScreenViewModel(
         )
 
         viewModelScope.launch {
-            ruleRepository.saveRule(rule)
+            if (rule.id != 0L) {
+                ruleRepository.updateRule(rule)
+            } else {
+                ruleRepository.saveRule(rule)
+            }
             navigator.navigateUp()
         }
     }
@@ -206,7 +234,7 @@ class AddRuleScreenViewModel(
         _state.value.selectedApps.map { it.packageName }
 
     private fun buildKeywords(): List<String> =
-        _state.value.criteriaText.ifEmpty { listOf("") } // empty means "match anything"
+        _state.value.criteriaText
 
     private fun buildCriteria(): List<RuleCriteria> =
         _state.value.selectedCriteria.map { extra ->
@@ -239,12 +267,17 @@ class AddRuleScreenViewModel(
         10800000,
         30000000,
     )
+}
 
-    data class AddRuleScreenState(
-        val selectedApps: List<AppItem> = listOf(),
-        val criteriaText: List<String> = emptyList(),
-        val action: RuleAction? = null,
-        val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),
-        val selectedCriteria: List<RuleCriteria> = emptyList(),
-    )
+data class AddRuleScreenState(
+    val selectedApps: List<AppItem> = listOf(),
+    val criteriaText: List<String> = emptyList(),
+    val action: RuleAction? = null,
+    val notificationList: List<Pair<NotificationUiModel, AppItem>> = emptyList(),
+    val selectedCriteria: List<RuleCriteria> = emptyList(),
+    val errorState: AddRuleErrorState? = null
+)
+
+interface AddRuleErrorState {
+    data object MissingActionError : AddRuleErrorState
 }
