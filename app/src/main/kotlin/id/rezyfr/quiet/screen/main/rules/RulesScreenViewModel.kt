@@ -27,7 +27,7 @@ class RulesScreenViewModel(private val navigator: AppComposeNavigator, private v
                     if (rules.isNotEmpty()) {
                         it.copy(rules = ViewState.Success(rules))
                     } else {
-                        it
+                        it.copy(rules = ViewState.Empty)
                     }
                 }
             }
@@ -37,6 +37,12 @@ class RulesScreenViewModel(private val navigator: AppComposeNavigator, private v
     fun toggleRules(rule: Rule) {
         viewModelScope.launch {
             rulesRepository.updateRule(rule.copy(enabled = !rule.enabled))
+        }
+    }
+
+    fun deleteRule(rule: Rule) {
+        viewModelScope.launch {
+            rulesRepository.deleteRule(rule)
         }
     }
 
