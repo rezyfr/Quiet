@@ -1,11 +1,12 @@
 package id.rezyfr.quiet.util
 
 import android.content.Context
+import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.Rule
-import id.rezyfr.quiet.domain.model.TimeCriteria
 import id.rezyfr.quiet.domain.model.TimeRange
 import java.time.Duration
 import java.time.LocalDateTime
@@ -17,11 +18,12 @@ object BatchScheduler {
     fun scheduleForRule(context: Context, rule: Rule) {
         val wm = WorkManager.getInstance(context)
 
-        rule.criteria
-            .filterIsInstance<TimeCriteria>()
-            .flatMap { it.ranges }
+        Log.d("DEBUGISSUE BatchScheduler", "Rule: ${rule.id}")
+        (rule.action as BatchAction)
+            .schedule
             .forEach { range ->
                 val delay = computeDelayUntil(range)
+                Log.d("DEBUGISSUE BatchScheduler", "Rule Delay: $delay")
                 if (delay > 0) {
                     val work = OneTimeWorkRequestBuilder<BatchDeliveryWorker>()
                         .setInitialDelay(delay, TimeUnit.MILLISECONDS)

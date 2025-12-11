@@ -1,6 +1,9 @@
 package id.rezyfr.quiet
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import id.rezyfr.quiet.di.appModule
 import id.rezyfr.quiet.di.persistenceModule
 import id.rezyfr.quiet.di.repositoryModule
@@ -25,5 +28,26 @@ class QuietApp : Application() {
                 )
             )
         }
+        createNotificationChannels()
+    }
+
+    private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val batchChannel = NotificationChannel(
+                CHANNEL_BATCH_DELIVERY,
+                "Quiet Batch Delivery",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications delivered after batching windows"
+                setShowBadge(true)
+                enableLights(false)
+                enableVibration(true)
+            }
+
+            val nm = getSystemService(NotificationManager::class.java)
+            nm.createNotificationChannel(batchChannel)
+        }
     }
 }
+const val CHANNEL_BATCH_DELIVERY = "quiet_batch_delivery"

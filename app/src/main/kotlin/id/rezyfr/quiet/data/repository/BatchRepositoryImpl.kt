@@ -22,6 +22,7 @@ class BatchRepositoryImpl(
     override suspend fun getBatch(ruleId: Long): List<BatchModel> {
         return batchDao.getBatchByRuleId(ruleId).map {
             BatchModel(
+                id = it.id,
                 ruleId = it.ruleId,
                 title = it.title,
                 text = it.text,

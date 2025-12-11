@@ -1,8 +1,10 @@
 package id.rezyfr.quiet.util
 
 import android.app.Notification
+import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import id.rezyfr.quiet.domain.model.BatchAction
 import id.rezyfr.quiet.domain.model.BatchModel
 import id.rezyfr.quiet.domain.model.CooldownAction
@@ -31,6 +33,7 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
     private val ruleRepository: RuleRepository by inject()
     private val batchRepository: BatchRepository by inject()
     private val coroutineScope: CoroutineScope by inject()
+    private val context: Context by inject()
     private lateinit var cooldownPrefs: CooldownPrefs
 
     override fun onCreate() {
@@ -66,7 +69,7 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
             if (!rule.enabled) return@forEach
 
             // 1. Keyword match
-            val keywordMatch = rule.keywords.any { content.contains(it.lowercase()) }
+            val keywordMatch = if(rule.keywords.isEmpty()) true else rule.keywords.any { content.contains(it.lowercase()) }
             if (!keywordMatch) return@forEach
 
             // 2. Time range match
@@ -172,20 +175,23 @@ class NotificationListener() : NotificationListenerService(), KoinComponent {
             is DismissAction -> cancelNotification(sbn.key)
             is BatchAction -> {
                 val action = rule.action as BatchAction
-                if (action.schedule.isNotEmpty()){
+                if (action.schedule.isNotEmpty()) {
                     if (isInBatchWindow(action.schedule)){
+                        Log.d("DEBUGISSUE NotificationListener", "Rule ${rule.id}: isInBatchWindow ${isInBatchWindow(action.schedule)}")
                         coroutineScope.launch {
                             batchRepository.addBatch(
                                 BatchModel(
                                     ruleId = rule.id,
                                     packageName = sbn.packageName,
-                                    title = "${sbn.getTitleBig()}\n${sbn.getTitle()}".trim(),
+                                    title = "Test ${rule.id}}".trim(),
                                     text = sbn.getText(),
-                                    timestamp = System.currentTimeMillis()
+                                    timestamp = System.currentTimeMillis(),
+                                    id = 0
                                 )
                             )
                         }
                         cancelNotification(sbn.key)
+                        BatchScheduler.scheduleForRule(context, rule)
                     }
                 }
             }
